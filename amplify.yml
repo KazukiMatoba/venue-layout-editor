@@ -14,13 +14,15 @@ frontend:
         - ls -la src/ || echo "src directory not found"
         - ls -la public/ || echo "public directory not found"
         - echo "=== Installing dependencies ==="
-        - npm install
+        - npm install --include=dev
         - echo "=== Dependencies installed ==="
         - echo "=== Checking installed packages ==="
         - npm list --depth=0
     build:
       commands:
         - echo "=== Starting build process ==="
+        - echo "=== Checking if vite is available ==="
+        - npx vite --version || echo "vite not found"
         - npm run lint || true
         - echo "=== Running build command ==="
         - CI=false npm run build
@@ -39,6 +41,6 @@ frontend:
 env:
   variables:
     CI: false
-    NODE_ENV: production
+    NODE_ENV: development
     NODE_OPTIONS: "--max-old-space-size=4096"
     _LIVE_UPDATES: '[{"name":"Node.js","pkg":"node","type":"nvm","version":"20"}]'
