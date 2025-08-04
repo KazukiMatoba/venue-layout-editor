@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-venuelayouteditor-dev-1820e-authRole",
+      "UnauthRoleArn": "arn:aws:iam::698858376562:role/amplify-venuelayouteditor-dev-1820e-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::698858376562:role/amplify-venuelayouteditor-dev-1820e-authRole",
+      "Region": "ap-northeast-1",
+      "DeploymentBucketName": "amplify-venuelayouteditor-dev-1820e-deployment",
+      "UnauthRoleName": "amplify-venuelayouteditor-dev-1820e-unauthRole",
+      "StackName": "amplify-venuelayouteditor-dev-1820e",
+      "StackId": "arn:aws:cloudformation:ap-northeast-1:698858376562:stack/amplify-venuelayouteditor-dev-1820e/1a9f48b0-70ea-11f0-a344-061fea4cf871",
+      "AmplifyAppId": "d3hlx88i0g7iwm"
+    }
+  }
+}

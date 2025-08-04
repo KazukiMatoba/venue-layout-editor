@@ -1,0 +1,111 @@
+.svg-loader {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.svg-loader__drop-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background-color: #fafafa;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-loader__drop-zone:hover {
+  border-color: #3b82f6;
+  background-color: #f8faff;
+}
+
+.svg-loader__drop-zone--drag-over {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+  transform: scale(1.02);
+}
+
+.svg-loader__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.svg-loader__icon {
+  color: #6b7280;
+  opacity: 0.7;
+}
+
+.svg-loader__drop-zone:hover .svg-loader__icon {
+  color: #3b82f6;
+  opacity: 1;
+}
+
+.svg-loader__content h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.svg-loader__content p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.svg-loader__formats {
+  font-size: 0.875rem;
+  color: #9ca3af;
+  background-color: #f3f4f6;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.svg-loader__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.svg-loader__loading p {
+  margin: 0;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.svg-loader__spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e5e7eb;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .svg-loader__drop-zone {
+    padding: 32px 16px;
+    min-height: 160px;
+  }
+  
+  .svg-loader__content h3 {
+    font-size: 1.125rem;
+  }
+  
+  .svg-loader__content p {
+    font-size: 0.875rem;
+  }
+}
