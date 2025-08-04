@@ -1,0 +1,23 @@
+<svg width="20000" height="25000" xmlns="http://www.w3.org/2000/svg">
+  <text
+    x="100"
+    y="800"
+    font-size="800"
+    font-family="sans-serif">桐</text>
+
+  <text
+    x="20000"
+    y="800"
+    font-size="400"
+    font-family="sans-serif"
+    text-anchor="end">間口：19M、奥行：24M、天井高：3M</text>
+
+  <rect
+    x="500"
+    y="900"
+    width="19000"
+    height="24000"
+    stroke="black"
+    stroke-width="10"
+    fill="none"/>
+</svg>

@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
-  <circle cx="500" cy="500" r="500" fill="#e8f5e8" stroke="#388e3c" stroke-width="10" opacity="0.8"/>
-  <text x="500" y="520" text-anchor="middle" font-family="Arial" font-size="60" fill="#388e3c">丸100</text>
-</svg>
