@@ -11,8 +11,10 @@ frontend:
         - echo "=== Directory contents ==="
         - ls -la
         - echo "=== Installing dependencies ==="
-        - npm install
+        - npm ci
         - echo "=== Dependencies installed ==="
+        - echo "=== Checking installed packages ==="
+        - npm list --depth=0
     build:
       commands:
         - echo "=== Starting build process ==="
@@ -30,7 +32,7 @@ frontend:
       - node_modules/**/*
   runtime:
     nodejs:
-      version: 18
+      version: 20
 env:
   variables:
     CI: false
