@@ -8,14 +8,17 @@ frontend:
         - npm --version
         - echo "=== Current directory ==="
         - pwd
+        - echo "=== Directory contents ==="
         - ls -la
-        - echo "=== Installing dependencies in venue-layout-editor ==="
+        - echo "=== Looking for venue-layout-editor directory ==="
+        - find . -name "venue-layout-editor" -type d || echo "venue-layout-editor directory not found"
+        - echo "=== Checking if package.json exists in venue-layout-editor ==="
+        - test -f venue-layout-editor/package.json && echo "package.json found" || echo "package.json not found"
+        - echo "=== Installing dependencies ==="
         - cd venue-layout-editor && npm install
-        - echo "=== Dependencies installed ==="
     build:
       commands:
         - echo "=== Starting build process ==="
-        - echo "=== Running build in venue-layout-editor directory ==="
         - cd venue-layout-editor && npm run lint || true
         - echo "=== Running build command ==="
         - cd venue-layout-editor && CI=false npm run build
