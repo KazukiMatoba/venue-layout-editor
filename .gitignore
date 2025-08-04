@@ -18,4 +18,10 @@ amplify-gradle-config.json
 amplifytools.xcconfig
 .secret-*
 **.sample
-#amplify-do-not-edit-end
+#amplify-do-not-edit-end# AW
+S Credentials and sensitive files
+IAM.txt
+*.pem
+*.key
+.aws/
+credentials
