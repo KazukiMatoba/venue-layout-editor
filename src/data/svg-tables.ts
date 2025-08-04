@@ -1,11 +1,5 @@
 export const svgTablesData = [
   {
-    "filename": "stage.svg",
-    "name": "ステージ",
-    "width": 4000,
-    "height": 2000
-  },
-  {
     "filename": "ステージ120x240.svg",
     "name": "ステージ120x240",
     "width": 2400,
@@ -34,18 +28,6 @@ export const svgTablesData = [
     "name": "丸テーブル 90",
     "width": 900,
     "height": 900
-  },
-  {
-    "filename": "丸100.svg",
-    "name": "丸テーブル 100",
-    "width": 1000,
-    "height": 1000
-  },
-  {
-    "filename": "丸110.svg",
-    "name": "丸テーブル 110",
-    "width": 1100,
-    "height": 1100
   },
   {
     "filename": "丸120.svg",
