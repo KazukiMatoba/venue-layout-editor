@@ -7,16 +7,15 @@ export interface SVGTableInfo {
   height: number;
 }
 
+import { svgTablesData } from '../data/svg-tables';
+
 // SVGファイル一覧を取得するAPI
 export const fetchSVGTableList = async (): Promise<SVGTableInfo[]> => {
   try {
-    const response = await fetch('/api/svg-tables.json');
-    if (!response.ok) {
-      throw new Error(`API呼び出しに失敗しました: ${response.status}`);
-    }
-    return await response.json();
+    // 静的インポートされたデータを返す
+    return svgTablesData;
   } catch (error) {
-    console.warn('API経由での取得に失敗しました。フォールバック処理を実行します:', error);
+    console.warn('データの取得に失敗しました。フォールバック処理を実行します:', error);
     // APIが利用できない場合のフォールバック処理
     return await getFallbackSVGTableList();
   }

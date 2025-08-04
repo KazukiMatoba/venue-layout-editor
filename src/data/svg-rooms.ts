@@ -1,0 +1,18 @@
+export const svgRoomsData = [
+  {
+    "name": "牡丹",
+    "filename": "牡丹.svg"
+  },
+  {
+    "name": "桐",
+    "filename": "桐.svg"
+  },
+  {
+    "name": "桂",
+    "filename": "桂.svg"
+  },
+  {
+    "name": "山楽",
+    "filename": "山楽.svg"
+  }
+];
