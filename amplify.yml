@@ -14,7 +14,7 @@ frontend:
         - ls -la src/ || echo "src directory not found"
         - ls -la public/ || echo "public directory not found"
         - echo "=== Installing dependencies ==="
-        - npm ci
+        - npm install
         - echo "=== Dependencies installed ==="
         - echo "=== Checking installed packages ==="
         - npm list --depth=0
