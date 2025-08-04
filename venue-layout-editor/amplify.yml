@@ -9,21 +9,18 @@ frontend:
         - echo "=== Current directory ==="
         - pwd
         - ls -la
-        - echo "=== Changing to venue-layout-editor directory ==="
-        - cd venue-layout-editor
-        - echo "=== Installing dependencies ==="
-        - npm install
+        - echo "=== Installing dependencies in venue-layout-editor ==="
+        - cd venue-layout-editor && npm install
         - echo "=== Dependencies installed ==="
-        - ls -la
     build:
       commands:
         - echo "=== Starting build process ==="
-        - cd venue-layout-editor
-        - npm run lint || true
+        - echo "=== Running build in venue-layout-editor directory ==="
+        - cd venue-layout-editor && npm run lint || true
         - echo "=== Running build command ==="
-        - CI=false npm run build
+        - cd venue-layout-editor && CI=false npm run build
         - echo "=== Build completed ==="
-        - ls -la dist/
+        - ls -la venue-layout-editor/dist/
   artifacts:
     baseDirectory: venue-layout-editor/dist
     files:
