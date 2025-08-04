@@ -36,30 +36,6 @@ export const svgTablesData = [
     "height": 1200
   },
   {
-    "filename": "丸130.svg",
-    "name": "丸テーブル 130",
-    "width": 1300,
-    "height": 1300
-  },
-  {
-    "filename": "丸140.svg",
-    "name": "丸テーブル 140",
-    "width": 1400,
-    "height": 1400
-  },
-  {
-    "filename": "丸150.svg",
-    "name": "丸テーブル 150",
-    "width": 1500,
-    "height": 1500
-  },
-  {
-    "filename": "丸160.svg",
-    "name": "丸テーブル 160",
-    "width": 1600,
-    "height": 1600
-  },
-  {
     "filename": "丸180.svg",
     "name": "丸テーブル 180",
     "width": 1800,
