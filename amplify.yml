@@ -10,6 +10,9 @@ frontend:
         - pwd
         - echo "=== Directory contents ==="
         - ls -la
+        - echo "=== Checking for src and public directories ==="
+        - ls -la src/ || echo "src directory not found"
+        - ls -la public/ || echo "public directory not found"
         - echo "=== Installing dependencies ==="
         - npm ci
         - echo "=== Dependencies installed ==="
@@ -38,3 +41,4 @@ env:
     CI: false
     NODE_ENV: production
     NODE_OPTIONS: "--max-old-space-size=4096"
+    _LIVE_UPDATES: '[{"name":"Node.js","pkg":"node","type":"nvm","version":"20"}]'
