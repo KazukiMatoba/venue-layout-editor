@@ -6,25 +6,31 @@ frontend:
         - echo "=== Environment Info ==="
         - node --version
         - npm --version
+        - echo "=== Current directory ==="
+        - pwd
+        - ls -la
+        - echo "=== Changing to venue-layout-editor directory ==="
+        - cd venue-layout-editor
         - echo "=== Installing dependencies ==="
-        - npm ci
+        - npm install
         - echo "=== Dependencies installed ==="
         - ls -la
     build:
       commands:
         - echo "=== Starting build process ==="
+        - cd venue-layout-editor
         - npm run lint || true
         - echo "=== Running build command ==="
         - CI=false npm run build
         - echo "=== Build completed ==="
         - ls -la dist/
   artifacts:
-    baseDirectory: dist
+    baseDirectory: venue-layout-editor/dist
     files:
       - '**/*'
   cache:
     paths:
-      - node_modules/**/*
+      - venue-layout-editor/node_modules/**/*
   runtime:
     nodejs:
       version: 18
