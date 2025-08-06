@@ -1,11 +1,5 @@
 [
   {
-    "filename": "stage.svg",
-    "name": "ステージ",
-    "width": 4000,
-    "height": 2000
-  },
-  {
     "filename": "ステージ120x240.svg",
     "name": "ステージ120x240",
     "width": 2400,

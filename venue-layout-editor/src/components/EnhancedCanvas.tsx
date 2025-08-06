@@ -35,25 +35,25 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   snapEnabled = false,
   gridVisible = false
 }) => {
-  // 動的なキャンバスサイズ計算
+  // 基本的なキャンバスサイズ設定
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
   
-  // ズーム・パン状態
+  // 繧ｺ繝ｼ繝繝ｻ繝代Φ迥ｶ諷・
   const [userScale, setUserScale] = useState(1.0);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   
-  // シフト+ドラッグによるパン操作の状態
+  // 繧ｷ繝輔ヨ+繝峨Λ繝・げ縺ｫ繧医ｋ繝代Φ謫堺ｽ懊・迥ｶ諷・
   const [isPanning, setIsPanning] = useState(false);
   const [panStartPos, setPanStartPos] = useState({ x: 0, y: 0 });
   const [panStartOffset, setPanStartOffset] = useState({ x: 0, y: 0 });
   
   useEffect(() => {
     const updateCanvasSize = () => {
-      // 利用可能な画面領域を計算
-      const sidebar = 300; // サイドバー幅
-      const headerHeight = 80; // ヘッダー高さ
-      const canvasHeaderHeight = 60; // キャンバスヘッダー高さ
+      // 利用可能な画面領域を計算・
+      const sidebar = 300; // サイドバー幅・
+      const headerHeight = 80; // 繝倥ャ繝繝ｼ鬮倥＆
+      const canvasHeaderHeight = 60; // 繧ｭ繝｣繝ｳ繝舌せ繝倥ャ繝繝ｼ鬮倥＆
       const padding = 32; // パディング
       
       const availableWidth = window.innerWidth - sidebar - padding;
@@ -71,11 +71,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
-  // キーボードイベントでシフトキーの状態を監視
+  // 繧ｭ繝ｼ繝懊・繝峨う繝吶Φ繝医〒繧ｷ繝輔ヨ繧ｭ繝ｼ縺ｮ迥ｶ諷九ｒ逶｣隕・
   useEffect(() => {
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key === 'Shift' && !isPanning) {
-        // シフトキーが離されたらカーソルをデフォルトに戻す
+        // 繧ｷ繝輔ヨ繧ｭ繝ｼ縺碁屬縺輔ｌ縺溘ｉ繧ｫ繝ｼ繧ｽ繝ｫ繧偵ョ繝輔か繝ｫ繝医↓謌ｻ縺・
         const stage = document.querySelector('.konvajs-content');
         if (stage) {
           (stage as HTMLElement).style.cursor = 'default';
@@ -112,7 +112,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const canvasWidth = baseCanvasWidth;
   const canvasHeight = baseCanvasHeight;
 
-  // SVG画像を中央配置するためのオフセット計算
+  // SVG逕ｻ蜒上ｒ荳ｭ螟ｮ驟咲ｽｮ縺吶ｋ縺溘ａ縺ｮ繧ｪ繝輔そ繝・ヨ險育ｮ・
   const scaledSvgWidth = svgData.width * finalScale;
   const scaledSvgHeight = svgData.height * finalScale;
   const centerOffsetX = (canvasWidth - scaledSvgWidth) / 2;
@@ -121,25 +121,25 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const [svgImage, setSvgImage] = useState<HTMLImageElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
   
-  // SVGテーブル用の画像管理
+  // SVG繝・・繝悶Ν逕ｨ縺ｮ逕ｻ蜒冗ｮ｡逅・
   const [svgTableImages, setSvgTableImages] = useState<{ [key: string]: HTMLImageElement }>({});
   
-  // 境界エリア設定用の状態
+  // 蠅・阜繧ｨ繝ｪ繧｢險ｭ螳夂畑縺ｮ迥ｶ諷・
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentRect, setCurrentRect] = useState<BoundaryArea | null>(null);
   
-  // 右クリックメニュー用の状態
+  // 蜿ｳ繧ｯ繝ｪ繝・け繝｡繝九Η繝ｼ逕ｨ縺ｮ迥ｶ諷・
   const [contextMenu, setContextMenu] = useState<{
     x: number;
     y: number;
     tableId: string;
   } | null>(null);
 
-  // ドラッグ中のテーブル位置を管理
+  // 繝峨Λ繝・げ荳ｭ縺ｮ繝・・繝悶Ν菴咲ｽｮ繧堤ｮ｡逅・
   const [draggingPositions, setDraggingPositions] = useState<{ [tableId: string]: { x: number; y: number } }>({});
 
-  // SVGをImageオブジェクトに変換
+  // SVG繧棚mage繧ｪ繝悶ず繧ｧ繧ｯ繝医↓螟画鋤
   useEffect(() => {
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
@@ -153,7 +153,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     };
 
     img.onerror = () => {
-      console.error('SVG画像の読み込みに失敗しました');
+      console.error('SVG逕ｻ蜒上・隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆');
       URL.revokeObjectURL(url);
     };
 
@@ -167,7 +167,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     };
   }, [svgData.content]);
 
-  // SVGテーブル画像を読み込む関数
+  // SVG繝・・繝悶Ν逕ｻ蜒上ｒ隱ｭ縺ｿ霎ｼ繧髢｢謨ｰ
   const loadSVGTableImage = async (tableId: string, svgContent: string) => {
     const img = new window.Image();
     
@@ -178,17 +178,17 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       };
 
       img.onerror = (error) => {
-        console.error('SVGテーブル画像の読み込みに失敗しました:', error);
-        reject(new Error('SVGテーブル画像の読み込みに失敗しました'));
+        console.error('SVG繝・・繝悶Ν逕ｻ蜒上・隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆:', error);
+        reject(new Error('SVG繝・・繝悶Ν逕ｻ蜒上・隱ｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨励＠縺ｾ縺励◆'));
       };
 
-      // SVGコンテンツをData URLとして設定
+      // SVG繧ｳ繝ｳ繝・Φ繝・ｒData URL縺ｨ縺励※險ｭ螳・
       const encodedSvg = encodeURIComponent(svgContent);
       img.src = `data:image/svg+xml;charset=utf-8,${encodedSvg}`;
     });
   };
 
-  // SVGテーブルの画像を事前読み込み
+  // SVG繝・・繝悶Ν縺ｮ逕ｻ蜒上ｒ莠句燕隱ｭ縺ｿ霎ｼ縺ｿ
   useEffect(() => {
     const svgTables = tables.filter(table => table.type === 'svg');
     
@@ -197,36 +197,36 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         const props = table.properties as any;
         if (props.svgContent) {
           loadSVGTableImage(table.id, props.svgContent).catch(error => {
-            console.warn(`テーブル ${table.id} の画像読み込みに失敗:`, error);
+            console.warn(`繝・・繝悶Ν ${table.id} 縺ｮ逕ｻ蜒剰ｪｭ縺ｿ霎ｼ縺ｿ縺ｫ螟ｱ謨・`, error);
           });
         }
       }
     });
   }, [tables]);
 
-  // グリッドスナップ機能（境界範囲内のグリッド線にスナップ）
+  // 繧ｰ繝ｪ繝・ラ繧ｹ繝翫ャ繝玲ｩ溯・・亥｢・阜遽・峇蜀・・繧ｰ繝ｪ繝・ラ邱壹↓繧ｹ繝翫ャ繝暦ｼ・
   const snapToGrid = (value: number, isX: boolean = true): number => {
     if (!snapEnabled) return value;
     
     const bounds = boundaryArea || { x: 0, y: 0, width: svgData.width, height: svgData.height };
     const boundaryStart = isX ? bounds.x : bounds.y;
     
-    // 境界範囲の開始点からの相対位置を計算
+    // 蠅・阜遽・峇縺ｮ髢句ｧ狗せ縺九ｉ縺ｮ逶ｸ蟇ｾ菴咲ｽｮ繧定ｨ育ｮ・
     const relativeValue = value - boundaryStart;
     
-    // 境界範囲内のグリッド線にスナップ
+    // 蠅・阜遽・峇蜀・・繧ｰ繝ｪ繝・ラ邱壹↓繧ｹ繝翫ャ繝・
     const snappedRelative = Math.round(relativeValue / gridSize) * gridSize;
     
-    // 絶対座標に戻す
+    // 邨ｶ蟇ｾ蠎ｧ讓吶↓謌ｻ縺・
     return boundaryStart + snappedRelative;
   };
 
-  // 複数選択時の左上テーブルを判定する関数
+  // 隍・焚驕ｸ謚樊凾縺ｮ蟾ｦ荳翫ユ繝ｼ繝悶Ν繧貞愛螳壹☆繧矩未謨ｰ
   const getLeadTableId = (tables: TableObject[], selectedIds: string[]): string => {
     const selectedTables = tables.filter(table => selectedIds.includes(table.id));
     if (selectedTables.length === 0) return '';
     
-    // 左上角の座標を計算してソート
+    // 蟾ｦ荳願ｧ偵・蠎ｧ讓吶ｒ險育ｮ励＠縺ｦ繧ｽ繝ｼ繝・
     const tablesWithTopLeft = selectedTables.map(table => {
       let leftTopX: number, leftTopY: number;
       
@@ -247,7 +247,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       return { table, leftTopX, leftTopY };
     });
     
-    // Y座標が最小、次にX座標が最小のテーブルを選択
+    // Y蠎ｧ讓吶′譛蟆上∵ｬ｡縺ｫX蠎ｧ讓吶′譛蟆上・繝・・繝悶Ν繧帝∈謚・
     tablesWithTopLeft.sort((a, b) => {
       if (Math.abs(a.leftTopY - b.leftTopY) < 1) {
         return a.leftTopX - b.leftTopX;
@@ -258,7 +258,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     return tablesWithTopLeft[0].table.id;
   };
 
-  // ズーム・パンコントロールハンドラー
+  // 繧ｺ繝ｼ繝繝ｻ繝代Φ繧ｳ繝ｳ繝医Ο繝ｼ繝ｫ繝上Φ繝峨Λ繝ｼ
   const handleScaleChange = (newScale: number) => {
     setUserScale(newScale);
   };
@@ -269,11 +269,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     setPanY(0);
   };
 
-  // マウスイベントハンドラー（境界エリア設定とシフト+ドラッグパン）
+  // マウスイベントハンドラー・亥｢・阜繧ｨ繝ｪ繧｢險ｭ螳壹→繧ｷ繝輔ヨ+繝峨Λ繝・げ繝代Φ・・
   const handleStageMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
     
-    // シフト+ドラッグでパン操作
+    // 繧ｷ繝輔ヨ+繝峨Λ繝・げ縺ｧ繝代Φ謫堺ｽ・
     if (e.evt.shiftKey) {
       setIsPanning(true);
       setPanStartPos({ x: pos.x, y: pos.y });
@@ -282,10 +282,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       return;
     }
     
-    // 境界エリア設定モード
+    // 蠅・阜繧ｨ繝ｪ繧｢險ｭ螳壹Δ繝ｼ繝・
     if (!isBoundarySettingMode) return;
     
-    // 中央配置オフセットを考慮した座標変換
+    // 荳ｭ螟ｮ驟咲ｽｮ繧ｪ繝輔そ繝・ヨ繧定・・縺励◆蠎ｧ讓吝､画鋤
     const x = (pos.x - centerOffsetX - panX) / finalScale;
     const y = (pos.y - centerOffsetY - panY) / finalScale;
     
@@ -297,7 +297,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const handleStageMouseMove = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
     
-    // シフト+ドラッグパン処理
+    // 繧ｷ繝輔ヨ+繝峨Λ繝・げ繝代Φ蜃ｦ逅・
     if (isPanning) {
       const deltaX = pos.x - panStartPos.x;
       const deltaY = pos.y - panStartPos.y;
@@ -306,17 +306,17 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       return;
     }
     
-    // カーソル変更（シフトキー押下時）
+    // カーソル変更・医す繝輔ヨ繧ｭ繝ｼ謚ｼ荳区凾・・
     if (e.evt.shiftKey) {
       e.target.getStage().container().style.cursor = 'grab';
     } else {
       e.target.getStage().container().style.cursor = 'default';
     }
     
-    // 境界エリア設定処理
+    // 蠅・阜繧ｨ繝ｪ繧｢險ｭ螳壼・逅・
     if (!isBoundarySettingMode || !isDrawing || !startPoint) return;
     
-    // 中央配置オフセットを考慮した座標変換
+    // 荳ｭ螟ｮ驟咲ｽｮ繧ｪ繝輔そ繝・ヨ繧定・・縺励◆蠎ｧ讓吝､画鋤
     const x = (pos.x - centerOffsetX - panX) / finalScale;
     const y = (pos.y - centerOffsetY - panY) / finalScale;
     
@@ -332,14 +332,14 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   };
 
   const handleStageMouseUp = (e: any) => {
-    // パン操作終了
+    // パン操作終了・
     if (isPanning) {
       setIsPanning(false);
       e.target.getStage().container().style.cursor = e.evt.shiftKey ? 'grab' : 'default';
       return;
     }
     
-    // 境界エリア設定処理
+    // 蠅・阜繧ｨ繝ｪ繧｢險ｭ螳壼・逅・
     if (!isBoundarySettingMode || !isDrawing || !currentRect) return;
     
     setIsDrawing(false);
@@ -352,37 +352,37 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     setCurrentRect(null);
   };
 
-  // 右クリックメニューハンドラー
+  // 蜿ｳ繧ｯ繝ｪ繝・け繝｡繝九Η繝ｼ繝上Φ繝峨Λ繝ｼ
   const handleTableRightClick = (e: any, tableId: string) => {
     e.evt.preventDefault();
     
-    // 右クリックした実際の位置を取得
+    // 蜿ｳ繧ｯ繝ｪ繝・け縺励◆螳滄圀縺ｮ菴咲ｽｮ繧貞叙蠕・
     const stage = e.target.getStage();
     const pointerPosition = stage.getPointerPosition();
     
-    // ステージのDOM要素の位置を取得
+    // 繧ｹ繝・・繧ｸ縺ｮDOM隕∫ｴ縺ｮ菴咲ｽｮ繧貞叙蠕・
     const stageContainer = stage.container();
     const rect = stageContainer.getBoundingClientRect();
     
-    // ページ上の絶対座標を計算
+    // 繝壹・繧ｸ荳翫・邨ｶ蟇ｾ蠎ｧ讓吶ｒ險育ｮ・
     let absoluteX = rect.left + pointerPosition.x;
     let absoluteY = rect.top + pointerPosition.y;
     
-    // メニューが画面外に出ないように調整
-    const menuWidth = 150; // ContextMenuの最小幅
-    const menuHeight = 80; // ContextMenuの概算高さ
+    // 繝｡繝九Η繝ｼ縺檎判髱｢螟悶↓蜃ｺ縺ｪ縺・ｈ縺・↓隱ｿ謨ｴ
+    const menuWidth = 150; // ContextMenu縺ｮ譛蟆丞ｹ・
+    const menuHeight = 80; // ContextMenuの推定高さ
     
-    // 右端チェック
+    // 蜿ｳ遶ｯ繝√ぉ繝・け
     if (absoluteX + menuWidth > window.innerWidth) {
       absoluteX = window.innerWidth - menuWidth - 10;
     }
     
-    // 下端チェック
+    // 荳狗ｫｯ繝√ぉ繝・け
     if (absoluteY + menuHeight > window.innerHeight) {
       absoluteY = window.innerHeight - menuHeight - 10;
     }
     
-    // 左端・上端チェック
+    // 蟾ｦ遶ｯ繝ｻ荳顔ｫｯ繝√ぉ繝・け
     absoluteX = Math.max(10, absoluteX);
     absoluteY = Math.max(10, absoluteY);
     
@@ -405,23 +405,23 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     onTableDuplicate?.(tableId);
   };
 
-  // グリッド線の生成
+  // 繧ｰ繝ｪ繝・ラ邱壹・逕滓・
   const generateGridLines = () => {
     if (!gridVisible) return [];
     
     const lines = [];
     const bounds = boundaryArea || { x: 0, y: 0, width: svgData.width, height: svgData.height };
     
-    // 境界範囲内のみにグリッド線を表示
-    // 境界範囲の(0,0)を基準にしてグリッド線を計算
+    // 蠅・阜遽・峇蜀・・縺ｿ縺ｫ繧ｰ繝ｪ繝・ラ邱壹ｒ陦ｨ遉ｺ
+    // 蠅・阜遽・峇縺ｮ(0,0)繧貞渕貅悶↓縺励※繧ｰ繝ｪ繝・ラ邱壹ｒ險育ｮ・
     
-    // 境界範囲内でのグリッド線の開始点と終了点を計算
+    // 蠅・阜遽・峇蜀・〒縺ｮ繧ｰ繝ｪ繝・ラ邱壹・髢句ｧ狗せ縺ｨ邨ゆｺ・せ繧定ｨ育ｮ・
     const startX = bounds.x;
     const endX = bounds.x + bounds.width;
     const startY = bounds.y;
     const endY = bounds.y + bounds.height;
     
-    // 垂直線：境界範囲の左端からgridSize間隔で描画
+    // 垂直線夲ｼ壼｢・阜遽・峇縺ｮ蟾ｦ遶ｯ縺九ｉgridSize髢馴囈縺ｧ謠冗判
     for (let x = startX; x <= endX; x += gridSize) {
       lines.push(
         <Line
@@ -439,7 +439,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       );
     }
     
-    // 水平線：境界範囲の上端からgridSize間隔で描画
+    // 水平線夲ｼ壼｢・阜遽・峇縺ｮ荳顔ｫｯ縺九ｉgridSize髢馴囈縺ｧ謠冗判
     for (let y = startY; y <= endY; y += gridSize) {
       lines.push(
         <Line
@@ -463,7 +463,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   return (
     <div className="enhanced-canvas">
       <div className="canvas-header">
-        <h4>会場レイアウト</h4>
+        <h4>莨壼ｴ繝ｬ繧､繧｢繧ｦ繝・/h4>
         <ZoomPanControls
           scale={userScale}
           onScaleChange={handleScaleChange}
@@ -481,7 +481,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
           onMouseUp={handleStageMouseUp}
         >
         <Layer>
-          {/* SVG背景画像の表示 */}
+          {/* SVG閭梧勹逕ｻ蜒上・陦ｨ遉ｺ */}
           {svgImage && (
             <Image
               image={svgImage}
@@ -493,10 +493,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             />
           )}
 
-          {/* グリッド線の表示 */}
+          {/* 繧ｰ繝ｪ繝・ラ邱壹・陦ｨ遉ｺ */}
           {generateGridLines()}
 
-          {/* 設定された境界エリアの表示 */}
+          {/* 險ｭ螳壹＆繧後◆蠅・阜繧ｨ繝ｪ繧｢縺ｮ陦ｨ遉ｺ */}
           {boundaryArea && (
             <Rect
               x={(boundaryArea.x * finalScale) + centerOffsetX + panX}
@@ -511,7 +511,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             />
           )}
           
-          {/* 境界エリア設定中の表示 */}
+          {/* 蠅・阜繧ｨ繝ｪ繧｢險ｭ螳壻ｸｭ縺ｮ陦ｨ遉ｺ */}
           {isBoundarySettingMode && currentRect && (
             <Rect
               x={(currentRect.x * finalScale) + centerOffsetX + panX}
@@ -528,22 +528,22 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
 
 
-          {/* テーブルの描画 */}
+          {/* 繝・・繝悶Ν縺ｮ謠冗判 */}
           {tables.map((table) => {
             const isSelected = selectedTableIds.includes(table.id);
             const x = table.position.x;
             const y = table.position.y;
             
-            // ドラッグ中の場合は実際のKonva要素の位置を使用、そうでなければ計算位置を使用
+            // 繝峨Λ繝・げ荳ｭ縺ｮ蝣ｴ蜷医・螳滄圀縺ｮKonva隕∫ｴ縺ｮ菴咲ｽｮ繧剃ｽｿ逕ｨ縲√◎縺・〒縺ｪ縺代ｌ縺ｰ險育ｮ嶺ｽ咲ｽｮ繧剃ｽｿ逕ｨ
             const draggingPos = draggingPositions[table.id];
             const displayX = draggingPos ? draggingPos.x : (x * finalScale) + centerOffsetX + panX;
             const displayY = draggingPos ? draggingPos.y : (y * finalScale) + centerOffsetY + panY;
 
-            // 複数選択時の左上テーブル判定
+            // 隍・焚驕ｸ謚樊凾縺ｮ蟾ｦ荳翫ユ繝ｼ繝悶Ν蛻､螳・
             const isLeadTable = selectedTableIds.length > 1 ? 
               getLeadTableId(tables, selectedTableIds) === table.id : true;
 
-            // 境界制約の計算関数（左上角ベース）
+            // 蠅・阜蛻ｶ邏・・險育ｮ鈴未謨ｰ・亥ｷｦ荳願ｧ偵・繝ｼ繧ｹ・・
             const constrainPosition = (leftTopX: number, leftTopY: number) => {
               const bounds = boundaryArea || {
                 x: 0,
@@ -558,25 +558,25 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               if (table.type === 'rectangle') {
                 const props = table.properties as { width: number; height: number };
 
-                // 左上角の制約
+                // 蟾ｦ荳願ｧ偵・蛻ｶ邏・
                 constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
                 constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
               } else if (table.type === 'circle') {
                 const props = table.properties as { radius: number };
                 const diameter = props.radius * 2;
 
-                // 左上角の制約（円の場合は直径分を考慮）
+                // 蟾ｦ荳願ｧ偵・蛻ｶ邏・ｼ亥・縺ｮ蝣ｴ蜷医・逶ｴ蠕・・繧定・・・・
                 constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - diameter, leftTopX));
                 constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - diameter, leftTopY));
               } else if (table.type === 'svg') {
                 const props = table.properties as any;
 
-                // SVGテーブルの左上角制約
+                // SVG繝・・繝悶Ν縺ｮ蟾ｦ荳願ｧ貞宛邏・
                 constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
                 constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
               }
 
-              // 左上角から中心位置に変換して返す（既存のposition管理との互換性のため）
+              // 蟾ｦ荳願ｧ偵°繧我ｸｭ蠢・ｽ咲ｽｮ縺ｫ螟画鋤縺励※霑斐☆・域里蟄倥・position邂｡逅・→縺ｮ莠呈鋤諤ｧ縺ｮ縺溘ａ・・
               if (table.type === 'rectangle') {
                 const props = table.properties as { width: number; height: number };
                 return { 
@@ -599,32 +599,32 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             };
 
             const handleDragMove = (e: any) => {
-              // 単一選択時または複数選択時でも通常のドラッグ処理
-              // ドラッグ中は1つのテーブルのみ移動
+              // 蜊倅ｸ驕ｸ謚樊凾縺ｾ縺溘・隍・焚驕ｸ謚樊凾縺ｧ繧る壼ｸｸ縺ｮ繝峨Λ繝・げ蜃ｦ逅・
+              // 繝峨Λ繝・げ荳ｭ縺ｯ1縺､縺ｮ繝・・繝悶Ν縺ｮ縺ｿ遘ｻ蜍・
 
-              // リアルタイムでの境界制約
+              // 繝ｪ繧｢繝ｫ繧ｿ繧､繝縺ｧ縺ｮ蠅・阜蛻ｶ邏・
               let leftTopX: number;
               let leftTopY: number;
 
               if (table.type === 'rectangle' || table.type === 'svg') {
-                // 長方形・SVGテーブルの場合：左上角の座標を取得
+                // 髟ｷ譁ｹ蠖｢繝ｻSVG繝・・繝悶Ν縺ｮ蝣ｴ蜷茨ｼ壼ｷｦ荳願ｧ偵・蠎ｧ讓吶ｒ蜿門ｾ・
                 leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
                 leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
               } else {
-                // 円形の場合：中心から左上角相当の位置を計算
+                // 蜀・ｽ｢縺ｮ蝣ｴ蜷茨ｼ壻ｸｭ蠢・°繧牙ｷｦ荳願ｧ堤嶌蠖薙・菴咲ｽｮ繧定ｨ育ｮ・
                 const props = table.properties as { radius: number };
                 leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
                 leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
               }
 
-              // 左上角をスナップ（境界範囲内のグリッド線に）
+              // 左上角をスナップ暦ｼ亥｢・阜遽・峇蜀・・繧ｰ繝ｪ繝・ラ邱壹↓・・
               let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
               let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
 
-              // 境界制約を適用（左上角ベース）
+              // 蠅・阜蛻ｶ邏・ｒ驕ｩ逕ｨ・亥ｷｦ荳願ｧ偵・繝ｼ繧ｹ・・
               const constrained = constrainPosition(snappedX, snappedY);
               
-              // 中心位置から表示位置を計算
+              // 荳ｭ蠢・ｽ咲ｽｮ縺九ｉ陦ｨ遉ｺ菴咲ｽｮ繧定ｨ育ｮ・
               if (table.type === 'rectangle') {
                 const props = table.properties as { width: number; height: number };
                 e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
@@ -638,8 +638,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 e.target.y(constrained.y * finalScale + centerOffsetY + panY);
               }
 
-              // ドラッグ中の位置を更新（選択枠の追従のため）
-              // 中心座標として保存
+              // 繝峨Λ繝・げ荳ｭ縺ｮ菴咲ｽｮ繧呈峩譁ｰ・磯∈謚樊棧縺ｮ霑ｽ蠕薙・縺溘ａ・・
+              // 荳ｭ蠢・ｺｧ讓吶→縺励※菫晏ｭ・
               let centerX, centerY;
               if (table.type === 'rectangle') {
                 const props = table.properties as { width: number; height: number };
@@ -650,7 +650,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 centerX = e.target.x() + (props.width * finalScale) / 2;
                 centerY = e.target.y() + (props.height * finalScale) / 2;
               } else {
-                // 円形の場合は既に中心座標
+                // 蜀・ｽ｢縺ｮ蝣ｴ蜷医・譌｢縺ｫ荳ｭ蠢・ｺｧ讓・
                 centerX = e.target.x();
                 centerY = e.target.y();
               }
@@ -666,28 +666,28 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               let leftTopY: number;
 
               if (table.type === 'rectangle' || table.type === 'svg') {
-                // 長方形・SVGテーブルの場合：左上角の座標を取得
+                // 髟ｷ譁ｹ蠖｢繝ｻSVG繝・・繝悶Ν縺ｮ蝣ｴ蜷茨ｼ壼ｷｦ荳願ｧ偵・蠎ｧ讓吶ｒ蜿門ｾ・
                 leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
                 leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
               } else {
-                // 円形の場合：中心から左上角相当の位置を計算
+                // 蜀・ｽ｢縺ｮ蝣ｴ蜷茨ｼ壻ｸｭ蠢・°繧牙ｷｦ荳願ｧ堤嶌蠖薙・菴咲ｽｮ繧定ｨ育ｮ・
                 const props = table.properties as { radius: number };
                 leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
                 leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
               }
 
-              // 左上角をスナップ（境界範囲内のグリッド線に）
+              // 左上角をスナップ暦ｼ亥｢・阜遽・峇蜀・・繧ｰ繝ｪ繝・ラ邱壹↓・・
               let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
               let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
 
-              // 境界制約を適用（左上角ベース）
+              // 蠅・阜蛻ｶ邏・ｒ驕ｩ逕ｨ・亥ｷｦ荳願ｧ偵・繝ｼ繧ｹ・・
               const constrained = constrainPosition(snappedX, snappedY);
               
-              // App.tsxのhandleMultipleTableMoveに処理を委譲
-              // 複数選択の場合の相対移動処理はApp.tsx側で実行される
+              // App.tsx縺ｮhandleMultipleTableMove縺ｫ蜃ｦ逅・ｒ蟋碑ｭｲ
+              // 隍・焚驕ｸ謚槭・蝣ｴ蜷医・逶ｸ蟇ｾ遘ｻ蜍募・逅・・App.tsx側で実行される
               onTableMove?.(table.id, constrained);
 
-              // ドラッグ終了時にドラッグ中の位置をクリア
+              // 繝峨Λ繝・げ邨ゆｺ・凾縺ｫ繝峨Λ繝・げ荳ｭ縺ｮ菴咲ｽｮ繧偵け繝ｪ繧｢
               setDraggingPositions(prev => {
                 const newPositions = { ...prev };
                 delete newPositions[table.id];
@@ -711,7 +711,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}
@@ -746,7 +746,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}
@@ -770,7 +770,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               const svgImage = svgTableImages[table.id];
               
               if (!svgImage) {
-                // SVG画像が読み込まれていない場合は仮の矩形を表示
+                // SVG逕ｻ蜒上′隱ｭ縺ｿ霎ｼ縺ｾ繧後※縺・↑縺・ｴ蜷医・莉ｮ縺ｮ遏ｩ蠖｢繧定｡ｨ遉ｺ
                 return (
                   <Rect
                     key={table.id}
@@ -799,7 +799,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={isSelected ? 0.8 : table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}
@@ -824,7 +824,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         </Layer>
         </Stage>
 
-        {/* 右クリックメニュー */}
+        {/* 蜿ｳ繧ｯ繝ｪ繝・け繝｡繝九Η繝ｼ */}
         {contextMenu && (
           <ContextMenu
             x={contextMenu.x}
@@ -841,3 +841,22 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 };
 
 export default EnhancedCanvas;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

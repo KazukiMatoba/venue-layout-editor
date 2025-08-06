@@ -711,7 +711,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}
@@ -746,7 +746,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}
@@ -799,7 +799,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     opacity={isSelected ? 0.8 : table.style.opacity}
                     draggable={!isBoundarySettingMode}
                     onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
                     onContextMenu={(e) => handleTableRightClick(e, table.id)}
                     onDragMove={handleDragMove}
                     onDragEnd={handleDragEnd}

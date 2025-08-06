@@ -5,15 +5,18 @@ export interface SVGRoomInfo {
   filename: string;
 }
 
-import { svgRoomsData } from '../data/svg-rooms';
-
 // SVGルーム一覧を取得するAPI
 export const fetchSVGRoomList = async (): Promise<SVGRoomInfo[]> => {
   try {
-    // 静的インポートされたデータを返す
-    return svgRoomsData;
+    // JSONファイルから直接読み込み
+    const response = await fetch('/api/svg-rooms.json');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.warn('データの取得に失敗しました。フォールバック処理を実行します:', error);
+    console.warn('JSONファイルの取得に失敗しました。フォールバック処理を実行します:', error);
     // APIが利用できない場合のフォールバック処理
     return await getFallbackSVGRoomList();
   }
