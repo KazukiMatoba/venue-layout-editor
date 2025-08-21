@@ -1,10 +1,9 @@
 // SVGテーブルAPI
+import { SVG_SCALE_FACTOR } from '../constants/scale';
 
 export interface SVGTableInfo {
   filename: string;
   name: string;
-  width: number;
-  height: number;
 }
 
 // SVGファイル一覧を取得するAPI
@@ -187,8 +186,8 @@ export const parseSVGDimensions = (svgContent: string): { width: number; height:
     }
 
     return {
-      width: parseFloat(widthMatch[1]),
-      height: parseFloat(heightMatch[1])
+      width: parseFloat(widthMatch[1]) * SVG_SCALE_FACTOR,
+      height: parseFloat(heightMatch[1]) * SVG_SCALE_FACTOR
     };
   } catch (error) {
     console.warn('SVG寸法の解析に失敗しました:', error);

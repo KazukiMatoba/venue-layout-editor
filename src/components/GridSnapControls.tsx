@@ -50,7 +50,7 @@ const GridSnapControls: React.FC<GridSnapControlsProps> = ({
         <input
           type="range"
           min="100"
-          max="1000"
+          max="1500"
           step="100"
           value={gridSize}
           onChange={(e) => onGridSizeChange(Number(e.target.value))}
@@ -58,12 +58,8 @@ const GridSnapControls: React.FC<GridSnapControlsProps> = ({
         />
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#666' }}>
           <span>100mm</span>
-          <span>1000mm</span>
+          <span>1500mm</span>
         </div>
-      </div>
-      
-      <div style={{ fontSize: '12px', color: '#666' }}>
-        推奨値: 100mm（標準）、200mm（大きめ）、500mm（粗い）
       </div>
     </div>
   );

@@ -13,15 +13,13 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   selectedTable,
   onUpdateTable
 }) => {
-  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg'>('rectangle');
+  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg'>('svg');
   const [rectangleWidth, setRectangleWidth] = useState(800);
   const [rectangleHeight, setRectangleHeight] = useState(600);
   const [circleRadius, setCircleRadius] = useState(400);
   const [selectedSvgTable, setSelectedSvgTable] = useState('');
   const [svgTables, setSvgTables] = useState<SVGTableInfo[]>([]);
   const [isLoadingSvgTables, setIsLoadingSvgTables] = useState(false);
-  const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
-  const [scanMethod, setScanMethod] = useState<'api' | 'scan'>('api');
 
   // SVGテーブル一覧をAPIから動的に読み込み
   useEffect(() => {
@@ -30,8 +28,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
       try {
         const tables = await fetchSVGTableList();
         setSvgTables(tables);
-        setScanMethod('api');
-        setLastScanTime(new Date());
       } catch (error) {
         console.error('SVGテーブル一覧の読み込みに失敗しました:', error);
         setSvgTables([]); // エラー時は空配列を設定
@@ -87,6 +83,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
           <input
             type="radio"
+            value="svg"
+            checked={tableType === 'svg'}
+            onChange={(e) => setTableType(e.target.value as 'svg')}
+            style={{ marginRight: '0.5rem' }}
+          />
+          プリセットテーブル
+        </label>
+        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+          <input
+            type="radio"
             value="rectangle"
             checked={tableType === 'rectangle'}
             onChange={(e) => setTableType(e.target.value as 'rectangle')}
@@ -94,7 +100,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           />
           長方形
         </label>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label style={{ display: 'block' }}>
           <input
             type="radio"
             value="circle"
@@ -103,16 +109,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             style={{ marginRight: '0.5rem' }}
           />
           円形
-        </label>
-        <label style={{ display: 'block' }}>
-          <input
-            type="radio"
-            value="svg"
-            checked={tableType === 'svg'}
-            onChange={(e) => setTableType(e.target.value as 'svg')}
-            style={{ marginRight: '0.5rem' }}
-          />
-          プリセットテーブル
         </label>
       </div>
 
@@ -193,20 +189,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           {svgTables.length === 0 && !isLoadingSvgTables && (
             <div style={{ padding: '0.5rem', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>
               利用可能なプリセットテーブルがありません
-            </div>
-          )}
-          {lastScanTime && (
-            <div style={{
-              padding: '0.3rem',
-              fontSize: '0.7rem',
-              color: '#666',
-              textAlign: 'center',
-              borderTop: '1px solid #eee',
-              marginTop: '0.5rem'
-            }}>
-              {scanMethod === 'api' ? '📄 API' : '🔍 フォルダスキャン'} |
-              {svgTables.length}件 |
-              {lastScanTime.toLocaleTimeString()}更新
             </div>
           )}
         </div>

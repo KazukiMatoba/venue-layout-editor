@@ -17,7 +17,7 @@ function App() {
   const [isBoundarySettingMode, setIsBoundarySettingMode] = useState(false)
   
   // グリッドスナップ設定
-  const [gridSize, setGridSize] = useState(100)
+  const [gridSize, setGridSize] = useState(1000)
   const [snapEnabled, setSnapEnabled] = useState(false)
   const [gridVisible, setGridVisible] = useState(false)
   

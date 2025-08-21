@@ -1,92 +1,74 @@
 [
   {
     "filename": "ステージ120x240.svg",
-    "name": "ステージ120x240",
-    "width": 2400,
-    "height": 1200
+    "name": "ステージ120x240"
   },
   {
     "filename": "ステージ180x240.svg",
-    "name": "ステージ180x240",
-    "width": 2400,
-    "height": 1800
+    "name": "ステージ180x240"
   },
   {
     "filename": "ステージ240x360.svg",
-    "name": "ステージ240x360",
-    "width": 3600,
-    "height": 2400
+    "name": "ステージ240x360"
   },
   {
     "filename": "ステージ240x720.svg",
-    "name": "ステージ240x720",
-    "width": 7200,
-    "height": 2400
+    "name": "ステージ240x720"
   },
   {
     "filename": "丸90.svg",
-    "name": "丸テーブル 90",
-    "width": 900,
-    "height": 900
+    "name": "丸テーブル 90"
   },
   {
     "filename": "丸120.svg",
-    "name": "丸テーブル 120",
-    "width": 1200,
-    "height": 1200
+    "name": "丸テーブル 120"
   },
   {
     "filename": "丸180.svg",
-    "name": "丸テーブル 180",
-    "width": 1800,
-    "height": 1800
+    "name": "丸テーブル 180"
   },
   {
     "filename": "丸180椅子8.svg",
-    "name": "丸テーブル 180（椅子8脚）",
-    "width": 1800,
-    "height": 1800
+    "name": "丸テーブル 180（椅子8脚）"
   },
   {
     "filename": "丸200.svg",
-    "name": "丸テーブル 200",
-    "width": 2000,
-    "height": 2000
+    "name": "丸テーブル 200"
   },
   {
     "filename": "机45x90.svg",
-    "name": "机 45×90",
-    "width": 900,
-    "height": 450
+    "name": "机 45×90"
   },
   {
     "filename": "机45x180.svg",
-    "name": "机 45×180",
-    "width": 1800,
-    "height": 450
+    "name": "机 45×180"
   },
   {
     "filename": "机60x120.svg",
-    "name": "机 60×120",
-    "width": 1200,
-    "height": 600
+    "name": "机 60×120"
   },
   {
     "filename": "机60x180.svg",
-    "name": "机 60×180",
-    "width": 1800,
-    "height": 600
+    "name": "机 60×180"
   },
   {
     "filename": "机90x180.svg",
-    "name": "机 90×180",
-    "width": 1800,
-    "height": 900
+    "name": "机 90×180"
   },
   {
     "filename": "机120x240.svg",
-    "name": "机 120×240",
-    "width": 2400,
-    "height": 1200
+    "name": "机 120×240"
+  },
+  {
+    "filename": "UNI90×45.svg",
+    "name": "UNI90×45"
+  },
+  {
+    "filename": "UNI100丸-2.svg",
+    "name": "UNI100丸-2"
+  },
+  {
+    "filename": "UNI100丸6-2.svg",
+    "name": "UNI100丸6-2"
   }
 ]
