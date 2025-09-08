@@ -155,13 +155,304 @@ function App() {
       ...originalTable,
       id: `table_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
       position: {
-        x: originalTable.position.x + 50, // 50mm右にオフセット
-        y: originalTable.position.y + 50  // 50mm下にオフセット
+        x: originalTable.position.x + 500, // 500mm右にオフセット
+        y: originalTable.position.y + 500  // 500mm下にオフセット
       }
     }
 
     setTables(prev => [...prev, newTable])
     setSelectedTableIds([newTable.id])
+  }
+
+  // 複数選択時の削除処理
+  const handleMultipleTableDelete = (ids: string[]) => {
+    setTables(prev => prev.filter(table => !ids.includes(table.id)))
+    setSelectedTableIds([])
+  }
+
+  // 複数選択時の複製処理
+  const handleMultipleTableDuplicate = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    const newTables: TableObject[] = selectedTables.map((originalTable, index) => ({
+      ...originalTable,
+      id: `table_${Date.now()}_${Math.random().toString(36).substring(2, 11)}_${index}`,
+      position: {
+        x: originalTable.position.x + 500, // 500mm右にオフセット
+        y: originalTable.position.y + 500  // 500mm下にオフセット
+      }
+    }))
+
+    setTables(prev => [...prev, ...newTables])
+    setSelectedTableIds(newTables.map(table => table.id))
+  }
+
+  // 複数選択時の上揃え処理
+  const handleAlignTop = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルを取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+
+    // 最初に選択されたテーブルの高さを取得
+    const primaryTableHeight = () => {
+      if (primaryTable.type === 'rectangle'){
+        const props = primaryTable.properties as { width: number; height: number };
+        return props.height;
+      }else if(primaryTable.type === 'circle'){
+        const props = primaryTable.properties as { radius: number };
+        return props.radius * 2; // 直径
+      } else if (primaryTable.type === 'svg') {
+        const props = primaryTable.properties as any;
+        return props.height;
+      }
+      return 0;
+    }
+    // 最初に選択されたテーブルの上辺の座標を取得
+    const primaryTopY = primaryTable.position.y - (primaryTableHeight() / 2);
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+        // それぞれのテーブルの高さを取得
+        const tableHeight = () => {
+          if (table.type === 'rectangle'){
+            const props = table.properties as { width: number; height: number };
+            return props.height;
+          }else if(table.type === 'circle'){
+            const props = table.properties as { radius: number };
+            return props.radius * 2; // 直径
+          } else if (table.type === 'svg') {
+            const props = table.properties as any;
+            return props.height;
+          }
+          return 0;
+        }
+
+        // 新しい中心座標を設定
+        return {
+          ...table,
+          position: {
+            x: table.position.x,
+            y: primaryTopY + (tableHeight() / 2)
+          }
+        };
+      }
+      return table;
+    }));
+  }
+
+  // 複数選択時の上下中央揃え処理
+  const handleVerticallyCentered = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルの中心Y座標を取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+    const baseY = primaryTable.position.y;
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+    
+        return {
+          ...table,
+          position: {
+            x: table.position.x,
+            y: baseY
+          }
+        };
+      }
+      return table;
+    }));
+  }
+
+  // 複数選択時の下揃え処理
+  const handleAlignBottom = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルを取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+
+    // 最初に選択されたテーブルの高さを取得
+    const primaryTableHeight = () => {
+      if (primaryTable.type === 'rectangle'){
+        const props = primaryTable.properties as { width: number; height: number };
+        return props.height;
+      }else if(primaryTable.type === 'circle'){
+        const props = primaryTable.properties as { radius: number };
+        return props.radius * 2; // 直径
+      } else if (primaryTable.type === 'svg') {
+        const props = primaryTable.properties as any;
+        return props.height;
+      }
+      return 0;
+    }
+    // 最初に選択されたテーブルの下辺の座標を取得
+    const primaryBottomY = primaryTable.position.y + (primaryTableHeight() / 2);
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+        // それぞれのテーブルの高さを取得
+        const tableHeight = () => {
+          if (table.type === 'rectangle'){
+            const props = table.properties as { width: number; height: number };
+            return props.height;
+          }else if(table.type === 'circle'){
+            const props = table.properties as { radius: number };
+            return props.radius * 2; // 直径
+          } else if (table.type === 'svg') {
+            const props = table.properties as any;
+            return props.height;
+          }
+          return 0;
+        }
+
+        return {
+          ...table,
+          position: {
+            x: table.position.x,
+            y: primaryBottomY - (tableHeight() / 2)
+          }
+        };
+      }
+      return table;
+    }));
+  }
+
+  // 複数選択時の左揃え処理
+  const handleAlignLeft = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルを取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+
+    // 最初に選択されたテーブルの幅を取得
+    const primaryTableWidth = () => {
+      if (primaryTable.type === 'rectangle'){
+        const props = primaryTable.properties as { width: number; height: number };
+        return props.width;
+      }else if(primaryTable.type === 'circle'){
+        const props = primaryTable.properties as { radius: number };
+        return props.radius * 2; // 直径
+      } else if (primaryTable.type === 'svg') {
+        const props = primaryTable.properties as any;
+        return props.width;
+      }
+      return 0;
+    }
+    // 最初に選択されたテーブルの左辺の座標を取得
+    const primaryLeftX = primaryTable.position.x - (primaryTableWidth() / 2);
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+        // それぞれのテーブルの幅を取得
+        const tableWidth = () => {
+          if (table.type === 'rectangle'){
+            const props = table.properties as { width: number; height: number };
+            return props.width;
+          }else if(table.type === 'circle'){
+            const props = table.properties as { radius: number };
+            return props.radius * 2; // 直径
+          } else if (table.type === 'svg') {
+            const props = table.properties as any;
+            return props.width;
+          }
+          return 0;
+        }
+
+        // 新しい中心座標を設定
+        return {
+          ...table,
+          position: {
+            x: primaryLeftX + (tableWidth() / 2),
+            y: table.position.y
+          }
+        };
+      }
+      return table;
+    }));
+  }
+
+  // 複数選択時の左右中央揃え処理
+  const handleHorizontallyCentered = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルの中心X座標を取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+    const baseX = primaryTable.position.x;
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+    
+        return {
+          ...table,
+          position: {
+            x: baseX,
+            y: table.position.y
+          }
+        };
+      }
+      return table;
+    }));
+  }
+
+  // 複数選択時の右揃え処理
+  const handleAlignRight = (ids: string[]) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 最初に選択されたテーブルを取得
+    const primaryTable = tables.find(table => table.id == ids[0])!;
+
+    // 最初に選択されたテーブルの幅を取得
+    const primaryTableWidth = () => {
+      if (primaryTable.type === 'rectangle'){
+        const props = primaryTable.properties as { width: number; height: number };
+        return props.width;
+      }else if(primaryTable.type === 'circle'){
+        const props = primaryTable.properties as { radius: number };
+        return props.radius * 2; // 直径
+      } else if (primaryTable.type === 'svg') {
+        const props = primaryTable.properties as any;
+        return props.width;
+      }
+      return 0;
+    }
+    // 最初に選択されたテーブルの右辺の座標を取得
+    const primaryRightX = primaryTable.position.x + (primaryTableWidth() / 2);
+
+    setTables(prev => prev.map(table => {
+      if (ids.includes(table.id)) {
+        // それぞれのテーブルの幅を取得
+        const tableWidth = () => {
+          if (table.type === 'rectangle'){
+            const props = table.properties as { width: number; height: number };
+            return props.width;
+          }else if(table.type === 'circle'){
+            const props = table.properties as { radius: number };
+            return props.radius * 2; // 直径
+          } else if (table.type === 'svg') {
+            const props = table.properties as any;
+            return props.width;
+          }
+          return 0;
+        }
+
+        // 新しい中心座標を設定
+        return {
+          ...table,
+          position: {
+            x: primaryRightX - (tableWidth() / 2),
+            y: table.position.y
+          }
+        };
+      }
+      return table;
+    }));
   }
 
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
@@ -223,12 +514,20 @@ function App() {
                 onTableMove={handleMultipleTableMove}
                 onTableDelete={handleTableDelete}
                 onTableDuplicate={handleTableDuplicate}
+                onMultipleTableDelete={handleMultipleTableDelete}
+                onMultipleTableDuplicate={handleMultipleTableDuplicate}
                 boundaryArea={boundaryArea || undefined}
                 onBoundaryAreaSet={handleBoundaryAreaSet}
                 isBoundarySettingMode={isBoundarySettingMode}
                 gridSize={gridSize}
                 snapEnabled={snapEnabled}
                 gridVisible={gridVisible}
+                onAlignTop={handleAlignTop}
+                onVerticallyCentered={handleVerticallyCentered}
+                onAlignBottom={handleAlignBottom}
+                onAlignLeft={handleAlignLeft}
+                onHorizontallyCentered={handleHorizontallyCentered}
+                onAlignRight={handleAlignRight}
               />
             ) : (
               <div className="canvas-empty">

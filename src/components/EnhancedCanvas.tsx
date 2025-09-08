@@ -11,6 +11,8 @@ interface EnhancedCanvasProps {
   onTableMove?: (id: string, position: Position) => void;
   onTableDelete?: (id: string) => void;
   onTableDuplicate?: (id: string) => void;
+  onMultipleTableDelete?: (ids: string[]) => void;
+  onMultipleTableDuplicate?: (ids: string[]) => void;
   selectedTableIds?: string[];
   boundaryArea?: BoundaryArea;
   onBoundaryAreaSet?: (boundary: BoundaryArea) => void;
@@ -18,6 +20,12 @@ interface EnhancedCanvasProps {
   gridSize?: number;
   snapEnabled?: boolean;
   gridVisible?: boolean;
+  onAlignTop?: (ids: string[]) => void;
+  onVerticallyCentered?: (ids: string[]) => void;
+  onAlignBottom?: (ids: string[]) => void;
+  onAlignLeft?: (ids: string[]) => void;
+  onHorizontallyCentered?: (ids: string[]) => void;
+  onAlignRight?: (ids: string[]) => void;
 }
 
 const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
@@ -27,27 +35,35 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onTableMove,
   onTableDelete,
   onTableDuplicate,
+  onMultipleTableDelete,
+  onMultipleTableDuplicate,
   selectedTableIds = [],
   boundaryArea,
   onBoundaryAreaSet,
   isBoundarySettingMode = false,
   gridSize = 100,
   snapEnabled = false,
-  gridVisible = false
+  gridVisible = false,
+  onAlignTop,
+  onVerticallyCentered,
+  onAlignBottom,
+  onAlignLeft,
+  onHorizontallyCentered,
+  onAlignRight,
 }) => {
   // 動的なキャンバスサイズ計算
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
-  
+
   // ズーム・パン状態
   const [userScale, setUserScale] = useState(1.0);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
-  
+
   // シフト+ドラッグによるパン操作の状態
   const [isPanning, setIsPanning] = useState(false);
   const [panStartPos, setPanStartPos] = useState({ x: 0, y: 0 });
   const [panStartOffset, setPanStartOffset] = useState({ x: 0, y: 0 });
-  
+
   useEffect(() => {
     const updateCanvasSize = () => {
       // 利用可能な画面領域を計算
@@ -55,19 +71,19 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       const headerHeight = 80; // ヘッダー高さ
       const canvasHeaderHeight = 60; // キャンバスヘッダー高さ
       const padding = 32; // パディング
-      
+
       const availableWidth = window.innerWidth - sidebar - padding;
       const availableHeight = window.innerHeight - headerHeight - canvasHeaderHeight - padding;
-      
+
       setCanvasSize({
         width: Math.max(600, availableWidth),
         height: Math.max(400, availableHeight)
       });
     };
-    
+
     updateCanvasSize();
     window.addEventListener('resize', updateCanvasSize);
-    
+
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
@@ -101,13 +117,13 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [isPanning]);
-  
+
   const baseCanvasWidth = canvasSize.width;
   const baseCanvasHeight = canvasSize.height;
   const baseScaleX = baseCanvasWidth / svgData.width;
   const baseScaleY = baseCanvasHeight / svgData.height;
   const baseScale = Math.min(baseScaleX, baseScaleY);
-  
+
   const finalScale = baseScale * userScale;
   const canvasWidth = baseCanvasWidth;
   const canvasHeight = baseCanvasHeight;
@@ -120,15 +136,15 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
   const [svgImage, setSvgImage] = useState<HTMLImageElement | null>(null);
   const imageRef = useRef<HTMLImageElement | null>(null);
-  
+
   // SVGテーブル用の画像管理
   const [svgTableImages, setSvgTableImages] = useState<{ [key: string]: HTMLImageElement }>({});
-  
+
   // 境界エリア設定用の状態
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState<{ x: number; y: number } | null>(null);
   const [currentRect, setCurrentRect] = useState<BoundaryArea | null>(null);
-  
+
   // 右クリックメニュー用の状態
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -161,16 +177,13 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     imageRef.current = img;
 
     return () => {
-      if (url) {
-        URL.revokeObjectURL(url);
-      }
     };
   }, [svgData.content]);
 
   // SVGテーブル画像を読み込む関数
   const loadSVGTableImage = async (tableId: string, svgContent: string) => {
     const img = new window.Image();
-    
+
     return new Promise<HTMLImageElement>((resolve, reject) => {
       img.onload = () => {
         setSvgTableImages(prev => ({ ...prev, [tableId]: img }));
@@ -191,7 +204,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   // SVGテーブルの画像を事前読み込み
   useEffect(() => {
     const svgTables = tables.filter(table => table.type === 'svg');
-    
+
     svgTables.forEach(table => {
       if (!svgTableImages[table.id]) {
         const props = table.properties as any;
@@ -207,16 +220,16 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   // グリッドスナップ機能（境界範囲内のグリッド線にスナップ）
   const snapToGrid = (value: number, isX: boolean = true): number => {
     if (!snapEnabled) return value;
-    
+
     const bounds = boundaryArea || { x: 0, y: 0, width: svgData.width, height: svgData.height };
     const boundaryStart = isX ? bounds.x : bounds.y;
-    
+
     // 境界範囲の開始点からの相対位置を計算
     const relativeValue = value - boundaryStart;
-    
+
     // 境界範囲内のグリッド線にスナップ
     const snappedRelative = Math.round(relativeValue / gridSize) * gridSize;
-    
+
     // 絶対座標に戻す
     return boundaryStart + snappedRelative;
   };
@@ -225,11 +238,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const getLeadTableId = (tables: TableObject[], selectedIds: string[]): string => {
     const selectedTables = tables.filter(table => selectedIds.includes(table.id));
     if (selectedTables.length === 0) return '';
-    
+
     // 左上角の座標を計算してソート
     const tablesWithTopLeft = selectedTables.map(table => {
       let leftTopX: number, leftTopY: number;
-      
+
       if (table.type === 'rectangle') {
         const props = table.properties as { width: number; height: number };
         leftTopX = table.position.x - props.width / 2;
@@ -243,10 +256,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         leftTopX = table.position.x - props.radius;
         leftTopY = table.position.y - props.radius;
       }
-      
+
       return { table, leftTopX, leftTopY };
     });
-    
+
     // Y座標が最小、次にX座標が最小のテーブルを選択
     tablesWithTopLeft.sort((a, b) => {
       if (Math.abs(a.leftTopY - b.leftTopY) < 1) {
@@ -254,7 +267,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       }
       return a.leftTopY - b.leftTopY;
     });
-    
+
     return tablesWithTopLeft[0].table.id;
   };
 
@@ -272,7 +285,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   // マウスイベントハンドラー（境界エリア設定とシフト+ドラッグパン）
   const handleStageMouseDown = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
-    
+
     // シフト+ドラッグでパン操作
     if (e.evt.shiftKey) {
       setIsPanning(true);
@@ -281,14 +294,14 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       e.target.getStage().container().style.cursor = 'grabbing';
       return;
     }
-    
+
     // 境界エリア設定モード
     if (!isBoundarySettingMode) return;
-    
+
     // 中央配置オフセットを考慮した座標変換
     const x = (pos.x - centerOffsetX - panX) / finalScale;
     const y = (pos.y - centerOffsetY - panY) / finalScale;
-    
+
     setIsDrawing(true);
     setStartPoint({ x, y });
     setCurrentRect({ x, y, width: 0, height: 0 });
@@ -296,7 +309,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
   const handleStageMouseMove = (e: any) => {
     const pos = e.target.getStage().getPointerPosition();
-    
+
     // シフト+ドラッグパン処理
     if (isPanning) {
       const deltaX = pos.x - panStartPos.x;
@@ -305,24 +318,24 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       setPanY(panStartOffset.y + deltaY);
       return;
     }
-    
+
     // カーソル変更（シフトキー押下時）
     if (e.evt.shiftKey) {
       e.target.getStage().container().style.cursor = 'grab';
     } else {
       e.target.getStage().container().style.cursor = 'default';
     }
-    
+
     // 境界エリア設定処理
     if (!isBoundarySettingMode || !isDrawing || !startPoint) return;
-    
+
     // 中央配置オフセットを考慮した座標変換
     const x = (pos.x - centerOffsetX - panX) / finalScale;
     const y = (pos.y - centerOffsetY - panY) / finalScale;
-    
+
     const width = x - startPoint.x;
     const height = y - startPoint.y;
-    
+
     setCurrentRect({
       x: width > 0 ? startPoint.x : x,
       y: height > 0 ? startPoint.y : y,
@@ -338,16 +351,16 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       e.target.getStage().container().style.cursor = e.evt.shiftKey ? 'grab' : 'default';
       return;
     }
-    
+
     // 境界エリア設定処理
     if (!isBoundarySettingMode || !isDrawing || !currentRect) return;
-    
+
     setIsDrawing(false);
-    
+
     if (currentRect.width > 10 && currentRect.height > 10) {
       onBoundaryAreaSet?.(currentRect);
     }
-    
+
     setStartPoint(null);
     setCurrentRect(null);
   };
@@ -355,37 +368,42 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   // 右クリックメニューハンドラー
   const handleTableRightClick = (e: any, tableId: string) => {
     e.evt.preventDefault();
-    
+
+    // 右クリックされたテーブルが選択されていない場合は、そのテーブルを選択する
+    if (!selectedTableIds.includes(tableId)) {
+      onTableSelect?.(tableId, false);
+    }
+
     // 右クリックした実際の位置を取得
     const stage = e.target.getStage();
     const pointerPosition = stage.getPointerPosition();
-    
+
     // ステージのDOM要素の位置を取得
     const stageContainer = stage.container();
     const rect = stageContainer.getBoundingClientRect();
-    
+
     // ページ上の絶対座標を計算
     let absoluteX = rect.left + pointerPosition.x;
     let absoluteY = rect.top + pointerPosition.y;
-    
+
     // メニューが画面外に出ないように調整
     const menuWidth = 150; // ContextMenuの最小幅
     const menuHeight = 80; // ContextMenuの概算高さ
-    
+
     // 右端チェック
     if (absoluteX + menuWidth > window.innerWidth) {
       absoluteX = window.innerWidth - menuWidth - 10;
     }
-    
+
     // 下端チェック
     if (absoluteY + menuHeight > window.innerHeight) {
       absoluteY = window.innerHeight - menuHeight - 10;
     }
-    
+
     // 左端・上端チェック
     absoluteX = Math.max(10, absoluteX);
     absoluteY = Math.max(10, absoluteY);
-    
+
     setContextMenu({
       x: absoluteX,
       y: absoluteY,
@@ -405,31 +423,61 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     onTableDuplicate?.(tableId);
   };
 
+  const handleMultipleTableDelete = () => {
+    onMultipleTableDelete?.(selectedTableIds);
+  };
+
+  const handleMultipleTableDuplicate = () => {
+    onMultipleTableDuplicate?.(selectedTableIds);
+  };
+
+  const handleAlignTop = () => {
+    onAlignTop?.(selectedTableIds);
+  }
+
+  const handleVerticallyCentered = () => {
+    onVerticallyCentered?.(selectedTableIds);
+  }
+  const handleAlignBottom = () => {
+    onAlignBottom?.(selectedTableIds);
+  }
+
+  const handleAlignLeft = () => {
+    onAlignLeft?.(selectedTableIds);
+  }
+
+  const handleHorizontallyCentered = () => {
+    onHorizontallyCentered?.(selectedTableIds);
+  }
+  const handleAlignRight = () => {
+    onAlignRight?.(selectedTableIds);
+  }
+
   // グリッド線の生成
   const generateGridLines = () => {
     if (!gridVisible) return [];
-    
+
     const lines = [];
     const bounds = boundaryArea || { x: 0, y: 0, width: svgData.width, height: svgData.height };
-    
+
     // 境界範囲内のみにグリッド線を表示
     // 境界範囲の(0,0)を基準にしてグリッド線を計算
-    
+
     // 境界範囲内でのグリッド線の開始点と終了点を計算
     const startX = bounds.x;
     const endX = bounds.x + bounds.width;
     const startY = bounds.y;
     const endY = bounds.y + bounds.height;
-    
+
     // 垂直線：境界範囲の左端からgridSize間隔で描画
     for (let x = startX; x <= endX; x += gridSize) {
       lines.push(
         <Line
           key={`v-${x}`}
           points={[
-            (x * finalScale) + centerOffsetX + panX, 
+            (x * finalScale) + centerOffsetX + panX,
             (startY * finalScale) + centerOffsetY + panY,
-            (x * finalScale) + centerOffsetX + panX, 
+            (x * finalScale) + centerOffsetX + panX,
             (endY * finalScale) + centerOffsetY + panY
           ]}
           stroke="rgba(0, 0, 0, 0.1)"
@@ -438,16 +486,16 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         />
       );
     }
-    
+
     // 水平線：境界範囲の上端からgridSize間隔で描画
     for (let y = startY; y <= endY; y += gridSize) {
       lines.push(
         <Line
           key={`h-${y}`}
           points={[
-            (startX * finalScale) + centerOffsetX + panX, 
+            (startX * finalScale) + centerOffsetX + panX,
             (y * finalScale) + centerOffsetY + panY,
-            (endX * finalScale) + centerOffsetX + panX, 
+            (endX * finalScale) + centerOffsetX + panX,
             (y * finalScale) + centerOffsetY + panY
           ]}
           stroke="rgba(0, 0, 0, 0.1)"
@@ -456,7 +504,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         />
       );
     }
-    
+
     return lines;
   };
 
@@ -473,355 +521,351 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
       </div>
 
       <div className="canvas-content">
-        <Stage 
-          width={canvasWidth} 
+        <Stage
+          width={canvasWidth}
           height={canvasHeight}
           onMouseDown={handleStageMouseDown}
           onMouseMove={handleStageMouseMove}
           onMouseUp={handleStageMouseUp}
         >
-        <Layer>
-          {/* SVG背景画像の表示 */}
-          {svgImage && (
-            <Image
-              image={svgImage}
-              x={centerOffsetX + panX}
-              y={centerOffsetY + panY}
-              width={svgData.width * finalScale}
-              height={svgData.height * finalScale}
-              listening={false}
-            />
-          )}
+          <Layer>
+            {/* SVG背景画像の表示 */}
+            {svgImage && (
+              <Image
+                image={svgImage}
+                x={centerOffsetX + panX}
+                y={centerOffsetY + panY}
+                width={svgData.width * finalScale}
+                height={svgData.height * finalScale}
+                listening={false}
+              />
+            )}
 
-          {/* グリッド線の表示 */}
-          {generateGridLines()}
+            {/* グリッド線の表示 */}
+            {generateGridLines()}
 
-          {/* 設定された境界エリアの表示 */}
-          {boundaryArea && (
-            <Rect
-              x={(boundaryArea.x * finalScale) + centerOffsetX + panX}
-              y={(boundaryArea.y * finalScale) + centerOffsetY + panY}
-              width={boundaryArea.width * finalScale}
-              height={boundaryArea.height * finalScale}
-              fill="rgba(0, 255, 0, 0.1)"
-              stroke="rgba(0, 255, 0, 0.8)"
-              strokeWidth={2}
-              dash={[5, 5]}
-              listening={false}
-            />
-          )}
-          
-          {/* 境界エリア設定中の表示 */}
-          {isBoundarySettingMode && currentRect && (
-            <Rect
-              x={(currentRect.x * finalScale) + centerOffsetX + panX}
-              y={(currentRect.y * finalScale) + centerOffsetY + panY}
-              width={currentRect.width * finalScale}
-              height={currentRect.height * finalScale}
-              fill="rgba(0, 0, 255, 0.1)"
-              stroke="rgba(0, 0, 255, 0.8)"
-              strokeWidth={2}
-              dash={[3, 3]}
-              listening={false}
-            />
-          )}
+            {/* 設定された境界エリアの表示 */}
+            {boundaryArea && (
+              <Rect
+                x={(boundaryArea.x * finalScale) + centerOffsetX + panX}
+                y={(boundaryArea.y * finalScale) + centerOffsetY + panY}
+                width={boundaryArea.width * finalScale}
+                height={boundaryArea.height * finalScale}
+                fill="rgba(0, 255, 0, 0.1)"
+                stroke="rgba(0, 255, 0, 0.8)"
+                strokeWidth={2}
+                dash={[5, 5]}
+                listening={false}
+              />
+            )}
+
+            {/* 境界エリア設定中の表示 */}
+            {isBoundarySettingMode && currentRect && (
+              <Rect
+                x={(currentRect.x * finalScale) + centerOffsetX + panX}
+                y={(currentRect.y * finalScale) + centerOffsetY + panY}
+                width={currentRect.width * finalScale}
+                height={currentRect.height * finalScale}
+                fill="rgba(0, 0, 255, 0.1)"
+                stroke="rgba(0, 0, 255, 0.8)"
+                strokeWidth={2}
+                dash={[3, 3]}
+                listening={false}
+              />
+            )}
 
 
 
-          {/* テーブルの描画 */}
-          {tables.map((table) => {
-            const isSelected = selectedTableIds.includes(table.id);
-            const x = table.position.x;
-            const y = table.position.y;
-            
-            // ドラッグ中の場合は実際のKonva要素の位置を使用、そうでなければ計算位置を使用
-            const draggingPos = draggingPositions[table.id];
-            const displayX = draggingPos ? draggingPos.x : (x * finalScale) + centerOffsetX + panX;
-            const displayY = draggingPos ? draggingPos.y : (y * finalScale) + centerOffsetY + panY;
+            {/* テーブルの描画 */}
+            {tables.map((table) => {
+              const isSelected = selectedTableIds.includes(table.id);
+              // 最初に選択したものと2番目以降に選択したものの色を変えるため
+              const isFirstSelected = selectedTableIds.indexOf(table.id) == 0 ? true : false;
+              const x = table.position.x;
+              const y = table.position.y;
 
-            // 複数選択時の左上テーブル判定
-            const isLeadTable = selectedTableIds.length > 1 ? 
-              getLeadTableId(tables, selectedTableIds) === table.id : true;
+              // ドラッグ中の場合は実際のKonva要素の位置を使用、そうでなければ計算位置を使用
+              const draggingPos = draggingPositions[table.id];
+              const displayX = draggingPos ? draggingPos.x : (x * finalScale) + centerOffsetX + panX;
+              const displayY = draggingPos ? draggingPos.y : (y * finalScale) + centerOffsetY + panY;
 
-            // 境界制約の計算関数（左上角ベース）
-            const constrainPosition = (leftTopX: number, leftTopY: number) => {
-              const bounds = boundaryArea || {
-                x: 0,
-                y: 0,
-                width: svgData.width,
-                height: svgData.height
+              // 複数選択時の左上テーブル判定
+              const isLeadTable = selectedTableIds.length > 1 ?
+                getLeadTableId(tables, selectedTableIds) === table.id : true;
+
+              // 境界制約の計算関数（左上角ベース）
+              const constrainPosition = (leftTopX: number, leftTopY: number) => {
+                const bounds = boundaryArea || {
+                  x: 0,
+                  y: 0,
+                  width: svgData.width,
+                  height: svgData.height
+                };
+
+                let constrainedX = leftTopX;
+                let constrainedY = leftTopY;
+
+                if (table.type === 'rectangle') {
+                  const props = table.properties as { width: number; height: number };
+
+                  // 左上角の制約
+                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
+                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
+                } else if (table.type === 'circle') {
+                  const props = table.properties as { radius: number };
+                  const diameter = props.radius * 2;
+
+                  // 左上角の制約（円の場合は直径分を考慮）
+                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - diameter, leftTopX));
+                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - diameter, leftTopY));
+                } else if (table.type === 'svg') {
+                  const props = table.properties as any;
+
+                  // SVGテーブルの左上角制約
+                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
+                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
+                }
+
+                // 左上角から中心位置に変換して返す（既存のposition管理との互換性のため）
+                if (table.type === 'rectangle') {
+                  const props = table.properties as { width: number; height: number };
+                  return {
+                    x: constrainedX + props.width / 2,
+                    y: constrainedY + props.height / 2
+                  };
+                } else if (table.type === 'svg') {
+                  const props = table.properties as any;
+                  return {
+                    x: constrainedX + props.width / 2,
+                    y: constrainedY + props.height / 2
+                  };
+                } else {
+                  const props = table.properties as { radius: number };
+                  return {
+                    x: constrainedX + props.radius,
+                    y: constrainedY + props.radius
+                  };
+                }
               };
 
-              let constrainedX = leftTopX;
-              let constrainedY = leftTopY;
+              const handleDragMove = (e: any) => {
+                // 単一選択時または複数選択時でも通常のドラッグ処理
+                // ドラッグ中は1つのテーブルのみ移動
+
+                // リアルタイムでの境界制約
+                let leftTopX: number;
+                let leftTopY: number;
+
+                if (table.type === 'rectangle' || table.type === 'svg') {
+                  // 長方形・SVGテーブルの場合：左上角の座標を取得
+                  leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
+                  leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
+                } else {
+                  // 円形の場合：中心から左上角相当の位置を計算
+                  const props = table.properties as { radius: number };
+                  leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
+                  leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
+                }
+
+                // 左上角をスナップ（境界範囲内のグリッド線に）
+                let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
+                let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
+
+                // 境界制約を適用（左上角ベース）
+                const constrained = constrainPosition(snappedX, snappedY);
+
+                // 中心位置から表示位置を計算
+                if (table.type === 'rectangle') {
+                  const props = table.properties as { width: number; height: number };
+                  e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
+                  e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
+                } else if (table.type === 'svg') {
+                  const props = table.properties as any;
+                  e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
+                  e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
+                } else {
+                  e.target.x(constrained.x * finalScale + centerOffsetX + panX);
+                  e.target.y(constrained.y * finalScale + centerOffsetY + panY);
+                }
+
+                // ドラッグ中の位置を更新（選択枠の追従のため）
+                // 中心座標として保存
+                let centerX, centerY;
+                if (table.type === 'rectangle') {
+                  const props = table.properties as { width: number; height: number };
+                  centerX = e.target.x() + (props.width * finalScale) / 2;
+                  centerY = e.target.y() + (props.height * finalScale) / 2;
+                } else if (table.type === 'svg') {
+                  const props = table.properties as any;
+                  centerX = e.target.x() + (props.width * finalScale) / 2;
+                  centerY = e.target.y() + (props.height * finalScale) / 2;
+                } else {
+                  // 円形の場合は既に中心座標
+                  centerX = e.target.x();
+                  centerY = e.target.y();
+                }
+
+                setDraggingPositions(prev => ({
+                  ...prev,
+                  [table.id]: { x: centerX, y: centerY }
+                }));
+              };
+
+              const handleDragEnd = (e: any) => {
+                let leftTopX: number;
+                let leftTopY: number;
+
+                if (table.type === 'rectangle' || table.type === 'svg') {
+                  // 長方形・SVGテーブルの場合：左上角の座標を取得
+                  leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
+                  leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
+                } else {
+                  // 円形の場合：中心から左上角相当の位置を計算
+                  const props = table.properties as { radius: number };
+                  leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
+                  leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
+                }
+
+                // 左上角をスナップ（境界範囲内のグリッド線に）
+                let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
+                let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
+
+                // 境界制約を適用（左上角ベース）
+                const constrained = constrainPosition(snappedX, snappedY);
+
+                // App.tsxのhandleMultipleTableMoveに処理を委譲
+                // 複数選択の場合の相対移動処理はApp.tsx側で実行される
+                onTableMove?.(table.id, constrained);
+
+                // ドラッグ終了時にドラッグ中の位置をクリア
+                setDraggingPositions(prev => {
+                  const newPositions = { ...prev };
+                  delete newPositions[table.id];
+                  return newPositions;
+                });
+              };
 
               if (table.type === 'rectangle') {
                 const props = table.properties as { width: number; height: number };
-
-                // 左上角の制約
-                constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
-                constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
-              } else if (table.type === 'circle') {
-                const props = table.properties as { radius: number };
-                const diameter = props.radius * 2;
-
-                // 左上角の制約（円の場合は直径分を考慮）
-                constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - diameter, leftTopX));
-                constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - diameter, leftTopY));
-              } else if (table.type === 'svg') {
-                const props = table.properties as any;
-
-                // SVGテーブルの左上角制約
-                constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
-                constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
-              }
-
-              // 左上角から中心位置に変換して返す（既存のposition管理との互換性のため）
-              if (table.type === 'rectangle') {
-                const props = table.properties as { width: number; height: number };
-                return { 
-                  x: constrainedX + props.width / 2, 
-                  y: constrainedY + props.height / 2 
-                };
-              } else if (table.type === 'svg') {
-                const props = table.properties as any;
-                return { 
-                  x: constrainedX + props.width / 2, 
-                  y: constrainedY + props.height / 2 
-                };
-              } else {
-                const props = table.properties as { radius: number };
-                return { 
-                  x: constrainedX + props.radius, 
-                  y: constrainedY + props.radius 
-                };
-              }
-            };
-
-            const handleDragMove = (e: any) => {
-              // 単一選択時または複数選択時でも通常のドラッグ処理
-              // ドラッグ中は1つのテーブルのみ移動
-
-              // リアルタイムでの境界制約
-              let leftTopX: number;
-              let leftTopY: number;
-
-              if (table.type === 'rectangle' || table.type === 'svg') {
-                // 長方形・SVGテーブルの場合：左上角の座標を取得
-                leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
-                leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
-              } else {
-                // 円形の場合：中心から左上角相当の位置を計算
-                const props = table.properties as { radius: number };
-                leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
-                leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
-              }
-
-              // 左上角をスナップ（境界範囲内のグリッド線に）
-              let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
-              let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
-
-              // 境界制約を適用（左上角ベース）
-              const constrained = constrainPosition(snappedX, snappedY);
-              
-              // 中心位置から表示位置を計算
-              if (table.type === 'rectangle') {
-                const props = table.properties as { width: number; height: number };
-                e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
-                e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
-              } else if (table.type === 'svg') {
-                const props = table.properties as any;
-                e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
-                e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
-              } else {
-                e.target.x(constrained.x * finalScale + centerOffsetX + panX);
-                e.target.y(constrained.y * finalScale + centerOffsetY + panY);
-              }
-
-              // ドラッグ中の位置を更新（選択枠の追従のため）
-              // 中心座標として保存
-              let centerX, centerY;
-              if (table.type === 'rectangle') {
-                const props = table.properties as { width: number; height: number };
-                centerX = e.target.x() + (props.width * finalScale) / 2;
-                centerY = e.target.y() + (props.height * finalScale) / 2;
-              } else if (table.type === 'svg') {
-                const props = table.properties as any;
-                centerX = e.target.x() + (props.width * finalScale) / 2;
-                centerY = e.target.y() + (props.height * finalScale) / 2;
-              } else {
-                // 円形の場合は既に中心座標
-                centerX = e.target.x();
-                centerY = e.target.y();
-              }
-              
-              setDraggingPositions(prev => ({
-                ...prev,
-                [table.id]: { x: centerX, y: centerY }
-              }));
-            };
-
-            const handleDragEnd = (e: any) => {
-              let leftTopX: number;
-              let leftTopY: number;
-
-              if (table.type === 'rectangle' || table.type === 'svg') {
-                // 長方形・SVGテーブルの場合：左上角の座標を取得
-                leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
-                leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
-              } else {
-                // 円形の場合：中心から左上角相当の位置を計算
-                const props = table.properties as { radius: number };
-                leftTopX = ((e.target.x() - centerOffsetX - panX) / finalScale) - props.radius;
-                leftTopY = ((e.target.y() - centerOffsetY - panY) / finalScale) - props.radius;
-              }
-
-              // 左上角をスナップ（境界範囲内のグリッド線に）
-              let snappedX = snapEnabled ? snapToGrid(leftTopX, true) : leftTopX;
-              let snappedY = snapEnabled ? snapToGrid(leftTopY, false) : leftTopY;
-
-              // 境界制約を適用（左上角ベース）
-              const constrained = constrainPosition(snappedX, snappedY);
-              
-              // App.tsxのhandleMultipleTableMoveに処理を委譲
-              // 複数選択の場合の相対移動処理はApp.tsx側で実行される
-              onTableMove?.(table.id, constrained);
-
-              // ドラッグ終了時にドラッグ中の位置をクリア
-              setDraggingPositions(prev => {
-                const newPositions = { ...prev };
-                delete newPositions[table.id];
-                return newPositions;
-              });
-            };
-
-            if (table.type === 'rectangle') {
-              const props = table.properties as { width: number; height: number };
-              return (
-                <>
-                  <Rect
-                    key={table.id}
-                    x={displayX - (props.width * finalScale) / 2}
-                    y={displayY - (props.height * finalScale) / 2}
-                    width={props.width * finalScale}
-                    height={props.height * finalScale}
-                    fill={table.style.fill}
-                    stroke={table.style.stroke}
-                    strokeWidth={1}
-                    opacity={table.style.opacity}
-                    draggable={!isBoundarySettingMode}
-                    onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
-                    onContextMenu={(e) => handleTableRightClick(e, table.id)}
-                    onDragMove={handleDragMove}
-                    onDragEnd={handleDragEnd}
-                  />
-                  {isSelected && (
+                return (
+                  <React.Fragment key={table.id}>
                     <Rect
-                      key={`${table.id}-selection`}
                       x={displayX - (props.width * finalScale) / 2}
                       y={displayY - (props.height * finalScale) / 2}
                       width={props.width * finalScale}
                       height={props.height * finalScale}
-                      fill="transparent"
-                      stroke="#ff9800"
-                      strokeWidth={2}
-                      listening={false}
+                      fill={table.style.fill}
+                      stroke={table.style.stroke}
+                      strokeWidth={1}
+                      opacity={table.style.opacity}
+                      draggable={!isBoundarySettingMode}
+                      onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                      onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
+                      onContextMenu={(e) => handleTableRightClick(e, table.id)}
+                      onDragMove={handleDragMove}
+                      onDragEnd={handleDragEnd}
                     />
-                  )}
-                </>
-              );
-            } else if (table.type === 'circle') {
-              const props = table.properties as { radius: number };
-              return (
-                <>
-                  <Circle
-                    key={table.id}
-                    x={displayX}
-                    y={displayY}
-                    radius={props.radius * finalScale}
-                    fill={table.style.fill}
-                    stroke={table.style.stroke}
-                    strokeWidth={1}
-                    opacity={table.style.opacity}
-                    draggable={!isBoundarySettingMode}
-                    onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
-                    onContextMenu={(e) => handleTableRightClick(e, table.id)}
-                    onDragMove={handleDragMove}
-                    onDragEnd={handleDragEnd}
-                  />
-                  {isSelected && (
+                    {isSelected && (
+                      <Rect
+                        x={displayX - (props.width * finalScale) / 2}
+                        y={displayY - (props.height * finalScale) / 2}
+                        width={props.width * finalScale}
+                        height={props.height * finalScale}
+                        fill="transparent"
+                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
+                        strokeWidth={2}
+                        listening={false}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              } else if (table.type === 'circle') {
+                const props = table.properties as { radius: number };
+                return (
+                  <React.Fragment key={table.id}>
                     <Circle
-                      key={`${table.id}-selection`}
                       x={displayX}
                       y={displayY}
                       radius={props.radius * finalScale}
-                      fill="transparent"
-                      stroke="#ff9800"
-                      strokeWidth={2}
-                      listening={false}
+                      fill={table.style.fill}
+                      stroke={table.style.stroke}
+                      strokeWidth={1}
+                      opacity={table.style.opacity}
+                      draggable={!isBoundarySettingMode}
+                      onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                      onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
+                      onContextMenu={(e) => handleTableRightClick(e, table.id)}
+                      onDragMove={handleDragMove}
+                      onDragEnd={handleDragEnd}
                     />
-                  )}
-                </>
-              );
-            } else if (table.type === 'svg') {
-              const props = table.properties as any;
-              const svgImage = svgTableImages[table.id];
-              
-              if (!svgImage) {
-                // SVG画像が読み込まれていない場合は仮の矩形を表示
-                return (
-                  <Rect
-                    key={table.id}
-                    x={displayX - (props.width * finalScale) / 2}
-                    y={displayY - (props.height * finalScale) / 2}
-                    width={props.width * finalScale}
-                    height={props.height * finalScale}
-                    fill="rgba(200, 200, 200, 0.5)"
-                    stroke="rgba(100, 100, 100, 0.8)"
-                    strokeWidth={1}
-                    dash={[5, 5]}
-                    listening={false}
-                  />
+                    {isSelected && (
+                      <Circle
+                        x={displayX}
+                        y={displayY}
+                        radius={props.radius * finalScale}
+                        fill="transparent"
+                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
+                        strokeWidth={2}
+                        listening={false}
+                      />
+                    )}
+                  </React.Fragment>
                 );
-              }
-              
-              return (
-                <>
-                  <Image
-                    key={table.id}
-                    image={svgImage}
-                    x={displayX - (props.width * finalScale) / 2}
-                    y={displayY - (props.height * finalScale) / 2}
-                    width={props.width * finalScale}
-                    height={props.height * finalScale}
-                    opacity={isSelected ? 0.8 : table.style.opacity}
-                    draggable={!isBoundarySettingMode}
-                    onClick={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, e.evt.ctrlKey)}
-                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
-                    onContextMenu={(e) => handleTableRightClick(e, table.id)}
-                    onDragMove={handleDragMove}
-                    onDragEnd={handleDragEnd}
-                  />
-                  {isSelected && (
+              } else if (table.type === 'svg') {
+                const props = table.properties as any;
+                const svgImage = svgTableImages[table.id];
+
+                if (!svgImage) {
+                  // SVG画像が読み込まれていない場合は仮の矩形を表示
+                  return (
                     <Rect
-                      key={`${table.id}-selection`}
+                      key={table.id}
                       x={displayX - (props.width * finalScale) / 2}
                       y={displayY - (props.height * finalScale) / 2}
                       width={props.width * finalScale}
                       height={props.height * finalScale}
-                      fill="transparent"
-                      stroke="#ff9800"
-                      strokeWidth={2}
+                      fill="rgba(200, 200, 200, 0.5)"
+                      stroke="rgba(100, 100, 100, 0.8)"
+                      strokeWidth={1}
+                      dash={[5, 5]}
                       listening={false}
                     />
-                  )}
-                </>
-              );
-            }
-          })}
-        </Layer>
+                  );
+                }
+
+                return (
+                  <React.Fragment key={table.id}>
+                    <Image
+                      image={svgImage}
+                      x={displayX - (props.width * finalScale) / 2}
+                      y={displayY - (props.height * finalScale) / 2}
+                      width={props.width * finalScale}
+                      height={props.height * finalScale}
+                      opacity={isSelected ? 0.8 : table.style.opacity}
+                      draggable={!isBoundarySettingMode}
+                      onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                      onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
+                      onContextMenu={(e) => handleTableRightClick(e, table.id)}
+                      onDragMove={handleDragMove}
+                      onDragEnd={handleDragEnd}
+                    />
+                    {isSelected && (
+                      <Rect
+                        x={displayX - (props.width * finalScale) / 2}
+                        y={displayY - (props.height * finalScale) / 2}
+                        width={props.width * finalScale}
+                        height={props.height * finalScale}
+                        fill="transparent"
+                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
+                        strokeWidth={2}
+                        listening={false}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              }
+            })}
+          </Layer>
         </Stage>
 
         {/* 右クリックメニュー */}
@@ -830,9 +874,18 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             x={contextMenu.x}
             y={contextMenu.y}
             tableId={contextMenu.tableId}
+            selectedTableIds={selectedTableIds}
             onClose={handleContextMenuClose}
             onDelete={() => handleTableDelete(contextMenu.tableId)}
             onDuplicate={() => handleTableDuplicate(contextMenu.tableId)}
+            onDeleteMultiple={handleMultipleTableDelete}
+            onDuplicateMultiple={handleMultipleTableDuplicate}
+            onAlignTop={handleAlignTop}
+            onVerticallyCentered={handleVerticallyCentered}
+            onAlignBottom={handleAlignBottom}
+            onAlignLeft={handleAlignLeft}
+            onHorizontallyCentered={handleHorizontallyCentered}
+            onAlignRight={handleAlignRight}
           />
         )}
       </div>

@@ -11,6 +11,8 @@ interface SimpleCanvasProps {
   onTableMove?: (id: string, position: Position) => void;
   onTableDelete?: (id: string) => void;
   onTableDuplicate?: (id: string) => void;
+  onMultipleTableDelete?: (ids: string[]) => void;
+  onMultipleTableDuplicate?: (ids: string[]) => void;
   selectedTableId?: string | null;
   boundaryArea?: BoundaryArea;
   onBoundaryAreaSet?: (boundary: BoundaryArea) => void;
@@ -27,6 +29,8 @@ const SimpleCanvas: React.FC<SimpleCanvasProps> = ({
   onTableMove,
   onTableDelete,
   onTableDuplicate,
+  onMultipleTableDelete,
+  onMultipleTableDuplicate,
   selectedTableId,
   boundaryArea,
   onBoundaryAreaSet,

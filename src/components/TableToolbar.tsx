@@ -227,6 +227,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             ) : (
               <div>サイズ: {(selectedTable.properties as any).width}mm × {(selectedTable.properties as any).height}mm</div>
             )}
+            <div>座標：{(selectedTable.position.x)} , {(selectedTable.position.y)}</div>
           </div>
         </div>
       )}
