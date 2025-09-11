@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { SVGData } from '../types';
-import { fetchSVGRoomList, scanResourceRoomFolder, type SVGRoomInfo } from '../api/svgRooms';
+import { fetchSVGRoomList, type SVGRoomInfo } from '../api/svgRooms';
 import { SVG_SCALE_FACTOR } from '../constants/scale';
 
 interface SVGLoaderProps {

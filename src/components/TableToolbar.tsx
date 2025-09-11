@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { TableObject } from '../types';
-import { fetchSVGTableList, scanResourceFolder, type SVGTableInfo, parseSVGDimensions } from '../api/svgTables';
+import { fetchSVGTableList, fetchSVGEquipmentList, type SVGTableInfo, parseSVGDimensions } from '../api/svgTables';
 
 interface TableToolbarProps {
   onCreateTable: (type: 'rectangle' | 'circle' | 'svg', props: any) => void;
@@ -13,13 +13,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   selectedTable,
   onUpdateTable
 }) => {
-  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg'>('svg');
+  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg' | 'equipment'>('svg');
   const [rectangleWidth, setRectangleWidth] = useState(800);
   const [rectangleHeight, setRectangleHeight] = useState(600);
   const [circleRadius, setCircleRadius] = useState(400);
   const [selectedSvgTable, setSelectedSvgTable] = useState('');
   const [svgTables, setSvgTables] = useState<SVGTableInfo[]>([]);
   const [isLoadingSvgTables, setIsLoadingSvgTables] = useState(false);
+  const [selectedSvgEquipment, setSelectedSvgEquipment] = useState('');
+  const [svgEquipments, setSvgEquipments] = useState<SVGTableInfo[]>([]);
+  const [isLoadingSvgEquipments, setIsLoadingSvgEquipments] = useState(false);
 
   // SVGテーブル一覧をAPIから動的に読み込み
   useEffect(() => {
@@ -36,7 +39,22 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
       }
     };
 
+    // SVG備品一覧をAPIから動的に読み込み
+    const loadSvgEquipments = async () => {
+      setIsLoadingSvgEquipments(true);
+      try {
+        const equipments = await fetchSVGEquipmentList();
+        setSvgEquipments(equipments);
+      } catch (error) {
+        console.error('SVG備品一覧の読み込みに失敗しました:', error);
+        setSvgEquipments([]); // エラー時は空配列を設定
+      } finally {
+        setIsLoadingSvgEquipments(false);
+      }
+    };
+
     loadSvgTables();
+    loadSvgEquipments();
   }, []);
 
   const handleCreateTable = async () => {
@@ -72,12 +90,40 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         console.error('SVGテーブルの作成に失敗しました:', error);
         alert('SVGテーブルの作成に失敗しました。');
       }
+    } else if (tableType === 'equipment' && selectedSvgEquipment) {
+      // SVG備品を読み込んで作成
+      try {
+        const response = await fetch(`/resource/equipment/${selectedSvgEquipment}`);
+        if (!response.ok) {
+          throw new Error(`SVGファイルの読み込みに失敗しました: ${selectedSvgEquipment}`);
+        }
+
+        const svgContent = await response.text();
+        const selectedEquipment = svgEquipments.find(equipment => equipment.filename === selectedSvgEquipment);
+
+        if (selectedEquipment) {
+          // SVGコンテンツから実際の寸法を再取得（最新の情報を使用）
+          const { width, height } = parseSVGDimensions(svgContent);
+
+          onCreateTable('svg', {
+            svgContent,
+            width,
+            height,
+            originalWidth: width,
+            originalHeight: height,
+            filename: selectedEquipment.filename
+          });
+        }
+      } catch (error) {
+        console.error('SVG備品の作成に失敗しました:', error);
+        alert('SVG備品の作成に失敗しました。');
+      }
     }
   };
 
   return (
     <div className="table-toolbar">
-      <h3>テーブル作成</h3>
+      <h3>ステンシル</h3>
 
       <div className="table-type-selection" style={{ marginBottom: '1rem' }}>
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -89,6 +135,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             style={{ marginRight: '0.5rem' }}
           />
           プリセットテーブル
+        </label>
+        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+          <input
+            type="radio"
+            value="equipment"
+            checked={tableType === 'equipment'}
+            onChange={(e) => setTableType(e.target.value as 'equipment')}
+            style={{ marginRight: '0.5rem' }}
+          />
+          プリセット備品
         </label>
         <label style={{ display: 'block', marginBottom: '0.5rem' }}>
           <input
@@ -159,7 +215,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             />
           </div>
         </div>
-      ) : (
+      ) : tableType === 'svg' ? (
         <div className="svg-settings" style={{ marginBottom: '1rem' }}>
           <h4>プリセットテーブル選択</h4>
           {isLoadingSvgTables ? (
@@ -181,7 +237,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               <option value="">-- テーブルを選択してください --</option>
               {svgTables.map((table) => (
                 <option key={table.filename} value={table.filename}>
-                  {table.name} ({table.width}×{table.height}mm)
+                  {table.name}
                 </option>
               ))}
             </select>
@@ -192,23 +248,56 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             </div>
           )}
         </div>
+      ) :  (
+        <div className="svg-settings" style={{ marginBottom: '1rem' }}>
+          <h4>プリセット備品選択</h4>
+          {isLoadingSvgEquipments ? (
+            <div style={{ padding: '1rem', textAlign: 'center', color: '#666' }}>
+              読み込み中...
+            </div>
+          ) : (
+            <select
+              value={selectedSvgEquipment}
+              onChange={(e) => setSelectedSvgEquipment(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #ccc',
+                borderRadius: '4px',
+                fontSize: '0.9rem'
+              }}
+            >
+              <option value="">-- 備品を選択してください --</option>
+              {svgEquipments.map((equipment) => (
+                <option key={equipment.filename} value={equipment.filename}>
+                  {equipment.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {svgEquipments.length === 0 && !isLoadingSvgEquipments && (
+            <div style={{ padding: '0.5rem', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>
+              利用可能なプリセット備品がありません
+            </div>
+          )}
+        </div>
       )}
 
       <button
         onClick={handleCreateTable}
-        disabled={tableType === 'svg' && !selectedSvgTable}
+        disabled={tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment}
         style={{
           width: '100%',
           padding: '0.7rem',
-          backgroundColor: (tableType === 'svg' && !selectedSvgTable) ? '#ccc' : '#1976d2',
+          backgroundColor: (tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment) ? '#ccc' : '#1976d2',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: (tableType === 'svg' && !selectedSvgTable) ? 'not-allowed' : 'pointer',
+          cursor: (tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment) ? 'not-allowed' : 'pointer',
           fontSize: '1rem'
         }}
       >
-        テーブル作成
+        追加
       </button>
 
       {selectedTable && (
@@ -227,7 +316,6 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             ) : (
               <div>サイズ: {(selectedTable.properties as any).width}mm × {(selectedTable.properties as any).height}mm</div>
             )}
-            <div>座標：{(selectedTable.position.x)} , {(selectedTable.position.y)}</div>
           </div>
         </div>
       )}
