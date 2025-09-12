@@ -46,6 +46,15 @@ export interface SVGTableProps {
   filename: string;
 }
 
+export interface TextBoxProps {
+  text: string;
+  fontSize: number;  // px単位
+  fontFamily: string;
+  width: number;     // mm単位（自動調整）
+  height: number;    // mm単位（自動調整）
+  textColor: string;
+}
+
 export interface TableStyle {
   fill: string;
   stroke: string;
@@ -59,9 +68,9 @@ export interface TableStyle {
 
 export interface TableObject {
   id: string;
-  type: 'rectangle' | 'circle' | 'svg';
+  type: 'rectangle' | 'circle' | 'svg' | 'textbox';
   position: Position;
-  properties: RectangleProps | CircleProps | SVGTableProps;
+  properties: RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
   style: TableStyle;
 }
 
@@ -159,5 +168,5 @@ export interface BoundaryArea {
 }
 
 // テーブルタイプとプロパティの型定義
-export type TableType = 'rectangle' | 'circle' | 'svg';
-export type TableProps = RectangleProps | CircleProps | SVGTableProps;
+export type TableType = 'rectangle' | 'circle' | 'svg' | 'textbox';
+export type TableProps = RectangleProps | CircleProps | SVGTableProps | TextBoxProps;

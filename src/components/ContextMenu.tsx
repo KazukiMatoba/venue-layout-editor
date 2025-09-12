@@ -294,7 +294,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            📋 選択したテーブルを複製 ({selectedTableIds.length}個)
+            📋 選択したオブジェクトを複製 ({selectedTableIds.length}個)
           </div>
           
           <div
@@ -316,7 +316,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            🗑️ 選択したテーブルを削除 ({selectedTableIds.length}個)
+            🗑️ 選択したオブジェクトを削除 ({selectedTableIds.length}個)
           </div>
         </>
       ) : (
@@ -340,7 +340,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            📋 テーブルを複製
+            📋 オブジェクトを複製
           </div>
           
           <div
@@ -371,7 +371,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            🗑️ テーブルを削除
+            🗑️ オブジェクトを削除
           </div>
         </>
       )}

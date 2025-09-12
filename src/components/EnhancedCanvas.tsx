@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Rect, Circle, Text, Image, Line } from 'react-konva';
 import ContextMenu from './ContextMenu';
 import ZoomPanControls from './ZoomPanControls';
-import type { SVGData, TableObject, Position, BoundaryArea } from '../types';
+import TextBoxRenderer from './TextBoxRenderer';
+import type { SVGData, TableObject, Position, BoundaryArea, TextBoxProps } from '../types';
 
 interface EnhancedCanvasProps {
   svgData: SVGData;
@@ -26,6 +27,7 @@ interface EnhancedCanvasProps {
   onAlignLeft?: (ids: string[]) => void;
   onHorizontallyCentered?: (ids: string[]) => void;
   onAlignRight?: (ids: string[]) => void;
+  onTextBoxDoubleClick?: (id: string) => void;
 }
 
 const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
@@ -50,6 +52,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onAlignLeft,
   onHorizontallyCentered,
   onAlignRight,
+  onTextBoxDoubleClick,
 }) => {
   // 動的なキャンバスサイズ計算
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
@@ -251,6 +254,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
         const props = table.properties as any;
         leftTopX = table.position.x - props.width / 2;
         leftTopY = table.position.y - props.height / 2;
+      } else if (table.type === 'textbox') {
+        const props = table.properties as TextBoxProps;
+        leftTopX = table.position.x - props.width / 2;
+        leftTopY = table.position.y - props.height / 2;
       } else {
         const props = table.properties as { radius: number };
         leftTopX = table.position.x - props.radius;
@@ -280,6 +287,17 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     setUserScale(1.0);
     setPanX(0);
     setPanY(0);
+  };
+
+  // Stageクリックハンドラー（テーブル選択解除）
+  const handleStageClick = (e: any) => {
+    // クリックされたターゲットを取得
+    const clickedOnEmpty = e.target === e.target.getStage();
+    
+    if (clickedOnEmpty) {
+      // 空の場所がクリックされた場合、選択を解除
+      onTableSelect?.(null, false);
+    }
   };
 
   // マウスイベントハンドラー（境界エリア設定とシフト+ドラッグパン）
@@ -527,6 +545,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
           onMouseDown={handleStageMouseDown}
           onMouseMove={handleStageMouseMove}
           onMouseUp={handleStageMouseUp}
+          onClick={handleStageClick}
         >
           <Layer>
             {/* SVG背景画像の表示 */}
@@ -538,6 +557,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 width={svgData.width * finalScale}
                 height={svgData.height * finalScale}
                 listening={false}
+                stroke="rgba(0, 0, 0, 0.8)"
+                strokeWidth={1}
               />
             )}
 
@@ -624,6 +645,12 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   // SVGテーブルの左上角制約
                   constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
                   constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
+                } else if (table.type === 'textbox') {
+                  const props = table.properties as TextBoxProps;
+
+                  // テキストボックスの左上角制約
+                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - props.width, leftTopX));
+                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - props.height, leftTopY));
                 }
 
                 // 左上角から中心位置に変換して返す（既存のposition管理との互換性のため）
@@ -635,6 +662,12 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   };
                 } else if (table.type === 'svg') {
                   const props = table.properties as any;
+                  return {
+                    x: constrainedX + props.width / 2,
+                    y: constrainedY + props.height / 2
+                  };
+                } else if (table.type === 'textbox') {
+                  const props = table.properties as TextBoxProps;
                   return {
                     x: constrainedX + props.width / 2,
                     y: constrainedY + props.height / 2
@@ -656,8 +689,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 let leftTopX: number;
                 let leftTopY: number;
 
-                if (table.type === 'rectangle' || table.type === 'svg') {
-                  // 長方形・SVGテーブルの場合：左上角の座標を取得
+                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
+                  // 長方形・SVGテーブル・テキストボックスの場合：左上角の座標を取得
                   leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
                   leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
                 } else {
@@ -683,6 +716,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   const props = table.properties as any;
                   e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
                   e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
+                } else if (table.type === 'textbox') {
+                  const props = table.properties as TextBoxProps;
+                  e.target.x((constrained.x - props.width / 2) * finalScale + centerOffsetX + panX);
+                  e.target.y((constrained.y - props.height / 2) * finalScale + centerOffsetY + panY);
                 } else {
                   e.target.x(constrained.x * finalScale + centerOffsetX + panX);
                   e.target.y(constrained.y * finalScale + centerOffsetY + panY);
@@ -697,6 +734,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   centerY = e.target.y() + (props.height * finalScale) / 2;
                 } else if (table.type === 'svg') {
                   const props = table.properties as any;
+                  centerX = e.target.x() + (props.width * finalScale) / 2;
+                  centerY = e.target.y() + (props.height * finalScale) / 2;
+                } else if (table.type === 'textbox') {
+                  const props = table.properties as TextBoxProps;
                   centerX = e.target.x() + (props.width * finalScale) / 2;
                   centerY = e.target.y() + (props.height * finalScale) / 2;
                 } else {
@@ -715,8 +756,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 let leftTopX: number;
                 let leftTopY: number;
 
-                if (table.type === 'rectangle' || table.type === 'svg') {
-                  // 長方形・SVGテーブルの場合：左上角の座標を取得
+                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
+                  // 長方形・SVGテーブル・テキストボックスの場合：左上角の座標を取得
                   leftTopX = (e.target.x() - centerOffsetX - panX) / finalScale;
                   leftTopY = (e.target.y() - centerOffsetY - panY) / finalScale;
                 } else {
@@ -862,6 +903,27 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       />
                     )}
                   </React.Fragment>
+                );
+              } else if (table.type === 'textbox') {
+                const props = table.properties as TextBoxProps;
+                return (
+                  <TextBoxRenderer
+                    key={table.id}
+                    id={table.id}
+                    x={displayX}
+                    y={displayY}
+                    properties={props}
+                    scale={finalScale}
+                    isSelected={isSelected}
+                    isFirstSelected={isFirstSelected}
+                    draggable={!isBoundarySettingMode}
+                    onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
+                    onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
+                    onContextMenu={(e) => handleTableRightClick(e, table.id)}
+                    onDragMove={handleDragMove}
+                    onDragEnd={handleDragEnd}
+                    onDoubleClick={onTextBoxDoubleClick}
+                  />
                 );
               }
             })}

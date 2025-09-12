@@ -5,8 +5,10 @@ import EnhancedCanvas from './components/EnhancedCanvas'
 import BoundaryAreaSelector from './components/BoundaryAreaSelector'
 import GridSnapControls from './components/GridSnapControls'
 import ErrorDisplay from './components/ErrorDisplay'
+import TextBoxEditor from './components/TextBoxEditor'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import type { SVGData, TableObject, BoundaryArea } from './types'
+import { getTableHeight, getTableWidth } from './utils/tableUtils'
+import type { SVGData, TableObject, BoundaryArea, TextBoxProps } from './types'
 import './App.css'
 
 function App() {
@@ -20,6 +22,9 @@ function App() {
   const [gridSize, setGridSize] = useState(1000)
   const [snapEnabled, setSnapEnabled] = useState(false)
   const [gridVisible, setGridVisible] = useState(false)
+  
+  // テキストボックス編集用の状態
+  const [editingTextBoxId, setEditingTextBoxId] = useState<string | null>(null)
   
   const { error, setError, clearError } = useErrorHandler()
 
@@ -35,7 +40,7 @@ function App() {
     setError(errorMessage)
   }
 
-  const handleCreateTable = (type: 'rectangle' | 'circle' | 'svg', props: any) => {
+  const handleCreateTable = (type: 'rectangle' | 'circle' | 'svg' | 'textbox', props: any) => {
     if (!svgData) {
       setError('SVG会場図を先に読み込んでください')
       return
@@ -198,13 +203,10 @@ function App() {
 
     // 最初に選択されたテーブルの高さを取得
     const primaryTableHeight = () => {
-      if (primaryTable.type === 'rectangle'){
-        const props = primaryTable.properties as { width: number; height: number };
-        return props.height;
-      }else if(primaryTable.type === 'circle'){
+      if(primaryTable.type === 'circle'){
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
-      } else if (primaryTable.type === 'svg') {
+      } else {
         const props = primaryTable.properties as any;
         return props.height;
       }
@@ -217,13 +219,10 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの高さを取得
         const tableHeight = () => {
-          if (table.type === 'rectangle'){
-            const props = table.properties as { width: number; height: number };
-            return props.height;
-          }else if(table.type === 'circle'){
+          if(table.type === 'circle'){
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
-          } else if (table.type === 'svg') {
+          } else {
             const props = table.properties as any;
             return props.height;
           }
@@ -277,13 +276,10 @@ function App() {
 
     // 最初に選択されたテーブルの高さを取得
     const primaryTableHeight = () => {
-      if (primaryTable.type === 'rectangle'){
-        const props = primaryTable.properties as { width: number; height: number };
-        return props.height;
-      }else if(primaryTable.type === 'circle'){
+      if(primaryTable.type === 'circle'){
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
-      } else if (primaryTable.type === 'svg') {
+      } else {
         const props = primaryTable.properties as any;
         return props.height;
       }
@@ -296,13 +292,10 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの高さを取得
         const tableHeight = () => {
-          if (table.type === 'rectangle'){
-            const props = table.properties as { width: number; height: number };
-            return props.height;
-          }else if(table.type === 'circle'){
+          if(table.type === 'circle'){
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
-          } else if (table.type === 'svg') {
+          } else {
             const props = table.properties as any;
             return props.height;
           }
@@ -331,13 +324,10 @@ function App() {
 
     // 最初に選択されたテーブルの幅を取得
     const primaryTableWidth = () => {
-      if (primaryTable.type === 'rectangle'){
-        const props = primaryTable.properties as { width: number; height: number };
-        return props.width;
-      }else if(primaryTable.type === 'circle'){
+      if(primaryTable.type === 'circle'){
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
-      } else if (primaryTable.type === 'svg') {
+      } else {
         const props = primaryTable.properties as any;
         return props.width;
       }
@@ -350,13 +340,10 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの幅を取得
         const tableWidth = () => {
-          if (table.type === 'rectangle'){
-            const props = table.properties as { width: number; height: number };
-            return props.width;
-          }else if(table.type === 'circle'){
+          if(table.type === 'circle'){
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
-          } else if (table.type === 'svg') {
+          } else {
             const props = table.properties as any;
             return props.width;
           }
@@ -410,13 +397,10 @@ function App() {
 
     // 最初に選択されたテーブルの幅を取得
     const primaryTableWidth = () => {
-      if (primaryTable.type === 'rectangle'){
-        const props = primaryTable.properties as { width: number; height: number };
-        return props.width;
-      }else if(primaryTable.type === 'circle'){
+      if(primaryTable.type === 'circle'){
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
-      } else if (primaryTable.type === 'svg') {
+      } else {
         const props = primaryTable.properties as any;
         return props.width;
       }
@@ -429,13 +413,10 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの幅を取得
         const tableWidth = () => {
-          if (table.type === 'rectangle'){
-            const props = table.properties as { width: number; height: number };
-            return props.width;
-          }else if(table.type === 'circle'){
+          if(table.type === 'circle'){
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
-          } else if (table.type === 'svg') {
+          } else {
             const props = table.properties as any;
             return props.width;
           }
@@ -455,8 +436,27 @@ function App() {
     }));
   }
 
+  // テキストボックス編集ハンドラー
+  const handleTextBoxDoubleClick = (id: string) => {
+    setEditingTextBoxId(id);
+  };
+
+  const handleTextBoxSave = (id: string, properties: TextBoxProps) => {
+    setTables(prev => prev.map(table => 
+      table.id === id 
+        ? { ...table, properties }
+        : table
+    ));
+    setEditingTextBoxId(null);
+  };
+
+  const handleTextBoxEditCancel = () => {
+    setEditingTextBoxId(null);
+  };
+
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
   const primarySelectedTable = selectedTables.length > 0 ? selectedTables[0] : null
+  const editingTextBox = editingTextBoxId ? tables.find(table => table.id === editingTextBoxId) : null
 
   return (
     <div className="App">
@@ -528,6 +528,7 @@ function App() {
                 onAlignLeft={handleAlignLeft}
                 onHorizontallyCentered={handleHorizontallyCentered}
                 onAlignRight={handleAlignRight}
+                onTextBoxDoubleClick={handleTextBoxDoubleClick}
               />
             ) : (
               <div className="canvas-empty">
@@ -536,6 +537,17 @@ function App() {
             )}
           </div>
         </div>
+        
+        {/* テキストボックス編集モーダル */}
+        {editingTextBox && (
+          <TextBoxEditor
+            isOpen={!!editingTextBoxId}
+            textBoxId={editingTextBoxId!}
+            properties={editingTextBox.properties as TextBoxProps}
+            onSave={handleTextBoxSave}
+            onCancel={handleTextBoxEditCancel}
+          />
+        )}
       </div>
     </div>
   )

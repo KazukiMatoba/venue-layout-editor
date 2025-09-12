@@ -3,7 +3,7 @@ import type { TableObject } from '../types';
 import { fetchSVGTableList, fetchSVGEquipmentList, type SVGTableInfo, parseSVGDimensions } from '../api/svgTables';
 
 interface TableToolbarProps {
-  onCreateTable: (type: 'rectangle' | 'circle' | 'svg', props: any) => void;
+  onCreateTable: (type: 'rectangle' | 'circle' | 'svg' | 'textbox', props: any) => void;
   selectedTable: TableObject | null;
   onUpdateTable: (id: string, props: Partial<any>) => void;
 }
@@ -13,7 +13,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   selectedTable,
   onUpdateTable
 }) => {
-  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg' | 'equipment'>('svg');
+  const [tableType, setTableType] = useState<'rectangle' | 'circle' | 'svg' | 'equipment' | 'textbox'>('svg');
   const [rectangleWidth, setRectangleWidth] = useState(800);
   const [rectangleHeight, setRectangleHeight] = useState(600);
   const [circleRadius, setCircleRadius] = useState(400);
@@ -23,6 +23,12 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   const [selectedSvgEquipment, setSelectedSvgEquipment] = useState('');
   const [svgEquipments, setSvgEquipments] = useState<SVGTableInfo[]>([]);
   const [isLoadingSvgEquipments, setIsLoadingSvgEquipments] = useState(false);
+
+  // テキストボックス設定
+  const [textBoxText, setTextBoxText] = useState('テキスト');
+  const [textBoxFontSize, setTextBoxFontSize] = useState(500);
+  const [textBoxFontFamily, setTextBoxFontFamily] = useState("'MS PGothic', sans-serif");
+  const [textBoxTextColor, setTextBoxTextColor] = useState('#000000');
 
   // SVGテーブル一覧をAPIから動的に読み込み
   useEffect(() => {
@@ -118,6 +124,40 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         console.error('SVG備品の作成に失敗しました:', error);
         alert('SVG備品の作成に失敗しました。');
       }
+    } else if (tableType === 'textbox') {
+      // テキストサイズを計算
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (context) {
+        context.font = `${textBoxFontSize}px ${textBoxFontFamily}`;
+
+        // 改行コードで分割して各行の幅を測定
+        const lines = textBoxText.split(/\r?\n/);
+        const lineHeight = textBoxFontSize;
+
+        let maxWidth = 0;
+        lines.forEach(line => {
+          const textMetrics = context.measureText(line);
+          maxWidth = Math.max(maxWidth, textMetrics.width);
+        });
+
+        const textWidth = maxWidth * 1.1; //ちょっと広めに確保
+        const textHeight = lineHeight * lines.length;
+
+        // デフォルトパディング（100mm）を含めたサイズ（mmに変換）
+        const paddingMm = 100; // 固定値
+        const widthMm = textWidth + (paddingMm * 2);
+        const heightMm = textHeight + (paddingMm * 2);
+
+        onCreateTable('textbox', {
+          text: textBoxText,
+          fontSize: textBoxFontSize,
+          fontFamily: textBoxFontFamily,
+          width: Math.max(widthMm, 50), // 最小幅50mm
+          height: Math.max(heightMm, 20), // 最小高さ20mm
+          textColor: textBoxTextColor
+        });
+      }
     }
   };
 
@@ -156,7 +196,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           />
           長方形
         </label>
-        <label style={{ display: 'block' }}>
+        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
           <input
             type="radio"
             value="circle"
@@ -165,6 +205,16 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             style={{ marginRight: '0.5rem' }}
           />
           円形
+        </label>
+        <label style={{ display: 'block' }}>
+          <input
+            type="radio"
+            value="textbox"
+            checked={tableType === 'textbox'}
+            onChange={(e) => setTableType(e.target.value as 'textbox')}
+            style={{ marginRight: '0.5rem' }}
+          />
+          テキストボックス
         </label>
       </div>
 
@@ -248,7 +298,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             </div>
           )}
         </div>
-      ) :  (
+      ) : tableType === 'equipment' ? (
         <div className="svg-settings" style={{ marginBottom: '1rem' }}>
           <h4>プリセット備品選択</h4>
           {isLoadingSvgEquipments ? (
@@ -281,19 +331,92 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             </div>
           )}
         </div>
-      )}
+      ) : tableType === 'textbox' ? (
+        <div className="textbox-settings" style={{ marginBottom: '1rem' }}>
+          <h4>テキストボックス設定</h4>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              テキスト:
+            </label>
+            <textarea
+              value={textBoxText}
+              onChange={(e) => setTextBoxText(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.3rem',
+                minHeight: '60px',
+                resize: 'vertical',
+                fontFamily: 'inherit'
+              }}
+              placeholder="テキストを入力してください"
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              フォントサイズ (px):
+            </label>
+            <input
+              type="number"
+              value={textBoxFontSize}
+              onChange={(e) => setTextBoxFontSize(Number(e.target.value))}
+              min="8"
+              max="72"
+              style={{ width: '100%', padding: '0.3rem' }}
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              フォント:
+            </label>
+            <select
+              value={textBoxFontFamily}
+              onChange={(e) => setTextBoxFontFamily(e.target.value)}
+              style={{ width: '100%', padding: '0.3rem' }}
+            >
+              <option value="'MS PGothic', sans-serif">MS Pゴシック</option>
+              <option value="'MS Gothic', monospace">MS ゴシック</option>
+              <option value="'MS PMincho', serif">MS P明朝</option>
+              <option value="'MS Mincho', serif">MS 明朝</option>
+              <option value="'Meiryo', sans-serif">メイリオ</option>
+            </select>
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              文字色:
+            </label>
+            <input
+              type="color"
+              value={textBoxTextColor}
+              onChange={(e) => setTextBoxTextColor(e.target.value)}
+              style={{ width: '100%', height: '35px' }}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <button
         onClick={handleCreateTable}
-        disabled={tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment}
+        disabled={
+          (tableType === 'svg' && !selectedSvgTable) ||
+          (tableType === 'equipment' && !selectedSvgEquipment) ||
+          (tableType === 'textbox' && !textBoxText.trim())
+        }
         style={{
           width: '100%',
           padding: '0.7rem',
-          backgroundColor: (tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment) ? '#ccc' : '#1976d2',
+          backgroundColor: (
+            (tableType === 'svg' && !selectedSvgTable) ||
+            (tableType === 'equipment' && !selectedSvgEquipment) ||
+            (tableType === 'textbox' && !textBoxText.trim())
+          ) ? '#ccc' : '#1976d2',
           color: 'white',
           border: 'none',
           borderRadius: '4px',
-          cursor: (tableType === 'svg' && !selectedSvgTable || tableType === 'equipment' && !selectedSvgEquipment) ? 'not-allowed' : 'pointer',
+          cursor: (
+            (tableType === 'svg' && !selectedSvgTable) ||
+            (tableType === 'equipment' && !selectedSvgEquipment) ||
+            (tableType === 'textbox' && !textBoxText.trim())
+          ) ? 'not-allowed' : 'pointer',
           fontSize: '1rem'
         }}
       >
@@ -307,12 +430,18 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             <div>ID: {selectedTable.id}</div>
             <div>タイプ: {
               selectedTable.type === 'rectangle' ? '長方形' :
-                selectedTable.type === 'circle' ? '円形' : 'プリセットテーブル'
+                selectedTable.type === 'circle' ? '円形' :
+                  selectedTable.type === 'textbox' ? 'テキストボックス' : 'プリセットテーブル'
             }</div>
             {selectedTable.type === 'rectangle' ? (
               <div>サイズ: {(selectedTable.properties as any).width}mm × {(selectedTable.properties as any).height}mm</div>
             ) : selectedTable.type === 'circle' ? (
               <div>半径: {(selectedTable.properties as any).radius}mm</div>
+            ) : selectedTable.type === 'textbox' ? (
+              <div>
+                <div>テキスト: {(selectedTable.properties as any).text}</div>
+                <div>サイズ: {Math.round((selectedTable.properties as any).width)}mm × {Math.round((selectedTable.properties as any).height)}mm</div>
+              </div>
             ) : (
               <div>サイズ: {(selectedTable.properties as any).width}mm × {(selectedTable.properties as any).height}mm</div>
             )}
