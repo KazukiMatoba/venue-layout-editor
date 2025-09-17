@@ -76,7 +76,6 @@ export interface TableObject {
   type: 'rectangle' | 'circle' | 'svg' | 'textbox';
   position: Position;
   properties: RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
-  style?: TableStyle;
 }
 
 // エラー情報の型定義

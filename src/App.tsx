@@ -8,7 +8,6 @@ import ErrorDisplay from './components/ErrorDisplay'
 import TextBoxEditor from './components/TextBoxEditor'
 import ProjectManager from './components/ProjectManager'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import { getTableHeight, getTableWidth } from './utils/tableUtils'
 import type { SVGData, TableObject, BoundaryArea, TextBoxProps, ProjectData } from './types/index'
 import './App.css'
 
