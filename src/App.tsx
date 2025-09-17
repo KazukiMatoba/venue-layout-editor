@@ -6,9 +6,10 @@ import BoundaryAreaSelector from './components/BoundaryAreaSelector'
 import GridSnapControls from './components/GridSnapControls'
 import ErrorDisplay from './components/ErrorDisplay'
 import TextBoxEditor from './components/TextBoxEditor'
+import ProjectManager from './components/ProjectManager'
 import { useErrorHandler } from './hooks/useErrorHandler'
 import { getTableHeight, getTableWidth } from './utils/tableUtils'
-import type { SVGData, TableObject, BoundaryArea, TextBoxProps } from './types'
+import type { SVGData, TableObject, BoundaryArea, TextBoxProps, ProjectData } from './types/index'
 import './App.css'
 
 function App() {
@@ -17,15 +18,19 @@ function App() {
   const [selectedTableIds, setSelectedTableIds] = useState<string[]>([])
   const [boundaryArea, setBoundaryArea] = useState<BoundaryArea | null>(null)
   const [isBoundarySettingMode, setIsBoundarySettingMode] = useState(false)
-  
+
   // グリッドスナップ設定
   const [gridSize, setGridSize] = useState(1000)
   const [snapEnabled, setSnapEnabled] = useState(false)
   const [gridVisible, setGridVisible] = useState(false)
-  
+
   // テキストボックス編集用の状態
   const [editingTextBoxId, setEditingTextBoxId] = useState<string | null>(null)
-  
+
+  // プロジェクト管理用の状態
+  const [currentProjectName, setCurrentProjectName] = useState<string>('')
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null)
+
   const { error, setError, clearError } = useErrorHandler()
 
   const handleSVGLoad = (data: SVGData) => {
@@ -49,23 +54,17 @@ function App() {
     // 会場の中央付近にランダムに配置
     const centerX = svgData.width / 2
     const centerY = svgData.height / 2
-    const randomOffsetX = (Math.random() - 0.5) * 200
-    const randomOffsetY = (Math.random() - 0.5) * 200
+    const randomOffsetX = (Math.random() - 0.5) * 1000
+    const randomOffsetY = (Math.random() - 0.5) * 1000
 
     const newTable: TableObject = {
-      id: `table_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `table_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       type,
-      position: { 
-        x: centerX + randomOffsetX, 
-        y: centerY + randomOffsetY 
+      position: {
+        x: centerX + randomOffsetX,
+        y: centerY + randomOffsetY
       },
-      properties: props,
-      style: {
-        fill: '#e3f2fd',
-        stroke: '#1976d2',
-        strokeWidth: 2,
-        opacity: 0.8
-      }
+      properties: props
     }
 
     setTables(prev => [...prev, newTable])
@@ -97,8 +96,8 @@ function App() {
   };
 
   const handleTableMove = (id: string, position: { x: number; y: number }) => {
-    setTables(prev => prev.map(table => 
-      table.id === id 
+    setTables(prev => prev.map(table =>
+      table.id === id
         ? { ...table, position }
         : table
     ))
@@ -203,7 +202,7 @@ function App() {
 
     // 最初に選択されたテーブルの高さを取得
     const primaryTableHeight = () => {
-      if(primaryTable.type === 'circle'){
+      if (primaryTable.type === 'circle') {
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
       } else {
@@ -219,7 +218,7 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの高さを取得
         const tableHeight = () => {
-          if(table.type === 'circle'){
+          if (table.type === 'circle') {
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
           } else {
@@ -253,7 +252,7 @@ function App() {
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-    
+
         return {
           ...table,
           position: {
@@ -276,7 +275,7 @@ function App() {
 
     // 最初に選択されたテーブルの高さを取得
     const primaryTableHeight = () => {
-      if(primaryTable.type === 'circle'){
+      if (primaryTable.type === 'circle') {
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
       } else {
@@ -292,7 +291,7 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの高さを取得
         const tableHeight = () => {
-          if(table.type === 'circle'){
+          if (table.type === 'circle') {
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
           } else {
@@ -324,7 +323,7 @@ function App() {
 
     // 最初に選択されたテーブルの幅を取得
     const primaryTableWidth = () => {
-      if(primaryTable.type === 'circle'){
+      if (primaryTable.type === 'circle') {
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
       } else {
@@ -340,7 +339,7 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの幅を取得
         const tableWidth = () => {
-          if(table.type === 'circle'){
+          if (table.type === 'circle') {
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
           } else {
@@ -374,7 +373,7 @@ function App() {
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-    
+
         return {
           ...table,
           position: {
@@ -397,7 +396,7 @@ function App() {
 
     // 最初に選択されたテーブルの幅を取得
     const primaryTableWidth = () => {
-      if(primaryTable.type === 'circle'){
+      if (primaryTable.type === 'circle') {
         const props = primaryTable.properties as { radius: number };
         return props.radius * 2; // 直径
       } else {
@@ -413,7 +412,7 @@ function App() {
       if (ids.includes(table.id)) {
         // それぞれのテーブルの幅を取得
         const tableWidth = () => {
-          if(table.type === 'circle'){
+          if (table.type === 'circle') {
             const props = table.properties as { radius: number };
             return props.radius * 2; // 直径
           } else {
@@ -442,8 +441,8 @@ function App() {
   };
 
   const handleTextBoxSave = (id: string, properties: TextBoxProps) => {
-    setTables(prev => prev.map(table => 
-      table.id === id 
+    setTables(prev => prev.map(table =>
+      table.id === id
         ? { ...table, properties }
         : table
     ));
@@ -454,6 +453,33 @@ function App() {
     setEditingTextBoxId(null);
   };
 
+  // プロジェクト読み込みハンドラー
+  const handleLoadProject = (projectData: ProjectData) => {
+    // プロジェクト情報を設定
+    setCurrentProjectName(projectData.projectInfo.name);
+
+    // 会場データを設定
+    if (projectData.venue.svgData) {
+      setSvgData(projectData.venue.svgData);
+    } else {
+      setSvgData(null);
+    }
+
+    // テーブルデータを設定
+    setTables(projectData.tables);
+
+    // 選択状態をクリア
+    setSelectedTableIds([]);
+    setEditingTextBoxId(null);
+
+    // 境界エリアをクリア
+    setBoundaryArea(null);
+    setIsBoundarySettingMode(false);
+
+    // エラーをクリア
+    clearError();
+  };
+
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
   const primarySelectedTable = selectedTables.length > 0 ? selectedTables[0] : null
   const editingTextBox = editingTextBoxId ? tables.find(table => table.id === editingTextBoxId) : null
@@ -462,9 +488,22 @@ function App() {
     <div className="App">
       <div className="venue-layout-editor">
         <div className="editor-header">
-          <h1>会場レイアウトエディター</h1>
+          <div className="header-left">
+            <h1>会場レイアウトエディター</h1>
+            {currentProjectName && (
+              <span className="project-name">- {currentProjectName}</span>
+            )}
+          </div>
+          <div className="header-right">
+            <ProjectManager
+              tables={tables}
+              svgData={svgData}
+              onLoadProject={handleLoadProject}
+              onLastSaveTimeChange={setLastSaveTime}
+            />
+          </div>
         </div>
-        
+
         {error && (
           <ErrorDisplay
             message={error}
@@ -472,14 +511,14 @@ function App() {
             type="error"
           />
         )}
-        
+
         <div className="editor-content">
           <div className="editor-sidebar">
             <SVGLoader
               onSVGLoad={handleSVGLoad}
               onError={handleSVGError}
             />
-            
+
             {svgData && (
               <BoundaryAreaSelector
                 onBoundarySet={handleStartBoundarySettings}
@@ -487,7 +526,7 @@ function App() {
                 isActive={isBoundarySettingMode}
               />
             )}
-            
+
             <GridSnapControls
               gridSize={gridSize}
               onGridSizeChange={setGridSize}
@@ -496,14 +535,14 @@ function App() {
               gridVisible={gridVisible}
               onGridVisibilityToggle={setGridVisible}
             />
-            
+
             <TableToolbar
               onCreateTable={handleCreateTable}
               selectedTable={primarySelectedTable}
-              onUpdateTable={() => {}} // 今回は実装しない
+              onUpdateTable={() => { }} // 今回は実装しない
             />
           </div>
-          
+
           <div className="editor-main">
             {svgData ? (
               <EnhancedCanvas
@@ -529,6 +568,7 @@ function App() {
                 onHorizontallyCentered={handleHorizontallyCentered}
                 onAlignRight={handleAlignRight}
                 onTextBoxDoubleClick={handleTextBoxDoubleClick}
+                lastSaveTime={lastSaveTime}
               />
             ) : (
               <div className="canvas-empty">
@@ -537,7 +577,7 @@ function App() {
             )}
           </div>
         </div>
-        
+
         {/* テキストボックス編集モーダル */}
         {editingTextBox && (
           <TextBoxEditor

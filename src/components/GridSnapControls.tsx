@@ -19,9 +19,9 @@ const GridSnapControls: React.FC<GridSnapControlsProps> = ({
 }) => {
   return (
     <div className="grid-snap-controls">
-      <h4>グリッドスナップ</h4>
+      <h3>グリッドスナップ</h3>
       
-      <div style={{ marginBottom: '10px' }}>
+      <div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <input
             type="checkbox"
@@ -32,7 +32,7 @@ const GridSnapControls: React.FC<GridSnapControlsProps> = ({
         </label>
       </div>
       
-      <div style={{ marginBottom: '10px' }}>
+      <div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <input
             type="checkbox"
@@ -43,7 +43,7 @@ const GridSnapControls: React.FC<GridSnapControlsProps> = ({
         </label>
       </div>
       
-      <div style={{ marginBottom: '10px' }}>
+      <div>
         <label style={{ display: 'block', fontSize: '14px', marginBottom: '4px' }}>
           グリッドサイズ: {gridSize}mm
         </label>

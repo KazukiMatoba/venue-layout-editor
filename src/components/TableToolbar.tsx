@@ -23,6 +23,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   const [selectedSvgEquipment, setSelectedSvgEquipment] = useState('');
   const [svgEquipments, setSvgEquipments] = useState<SVGTableInfo[]>([]);
   const [isLoadingSvgEquipments, setIsLoadingSvgEquipments] = useState(false);
+  const [fillColor, setFillColor] = useState('#cccccc');
+  const [strokeColor, setStrokeColor] = useState('#000000');
 
   // テキストボックス設定
   const [textBoxText, setTextBoxText] = useState('テキスト');
@@ -65,9 +67,9 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
 
   const handleCreateTable = async () => {
     if (tableType === 'rectangle') {
-      onCreateTable('rectangle', { width: rectangleWidth, height: rectangleHeight });
+      onCreateTable('rectangle', { width: rectangleWidth, height: rectangleHeight, fillColor: fillColor, strokeColor: strokeColor });
     } else if (tableType === 'circle') {
-      onCreateTable('circle', { radius: circleRadius });
+      onCreateTable('circle', { radius: circleRadius, fillColor: fillColor, strokeColor: strokeColor });
     } else if (tableType === 'svg' && selectedSvgTable) {
       // SVGテーブルを読み込んで作成
       try {
@@ -166,7 +168,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
       <h3>ステンシル</h3>
 
       <div className="table-type-selection" style={{ marginBottom: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label style={{ display: 'block' }}>
           <input
             type="radio"
             value="svg"
@@ -176,7 +178,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           />
           プリセットテーブル
         </label>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label style={{ display: 'block' }}>
           <input
             type="radio"
             value="equipment"
@@ -186,7 +188,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           />
           プリセット備品
         </label>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label style={{ display: 'block' }}>
           <input
             type="radio"
             value="rectangle"
@@ -196,7 +198,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           />
           長方形
         </label>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+        <label style={{ display: 'block' }}>
           <input
             type="radio"
             value="circle"
@@ -234,7 +236,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               style={{ width: '100%', padding: '0.3rem' }}
             />
           </div>
-          <div>
+          <div style={{ marginBottom: '0.5rem' }}>
             <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
               高さ (mm):
             </label>
@@ -247,11 +249,33 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               style={{ width: '100%', padding: '0.3rem' }}
             />
           </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              塗潰し色:
+            </label>
+            <input
+              type="color"
+              value={fillColor}
+              onChange={(e) => setFillColor(e.target.value)}
+              style={{ width: '100%', height: '35px' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              枠線色:
+            </label>
+            <input
+              type="color"
+              value={strokeColor}
+              onChange={(e) => setStrokeColor(e.target.value)}
+              style={{ width: '100%', height: '35px' }}
+            />
+          </div>
         </div>
       ) : tableType === 'circle' ? (
         <div className="circle-settings" style={{ marginBottom: '1rem' }}>
           <h4>円形テーブル設定</h4>
-          <div>
+          <div style={{ marginBottom: '0.5rem' }}>
             <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
               半径 (mm):
             </label>
@@ -262,6 +286,28 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               min="25"
               max="1000"
               style={{ width: '100%', padding: '0.3rem' }}
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              塗潰し色:
+            </label>
+            <input
+              type="color"
+              value={fillColor}
+              onChange={(e) => setFillColor(e.target.value)}
+              style={{ width: '100%', height: '35px' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              枠線色:
+            </label>
+            <input
+              type="color"
+              value={strokeColor}
+              onChange={(e) => setStrokeColor(e.target.value)}
+              style={{ width: '100%', height: '35px' }}
             />
           </div>
         </div>
@@ -401,24 +447,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           (tableType === 'equipment' && !selectedSvgEquipment) ||
           (tableType === 'textbox' && !textBoxText.trim())
         }
-        style={{
-          width: '100%',
-          padding: '0.7rem',
-          backgroundColor: (
-            (tableType === 'svg' && !selectedSvgTable) ||
-            (tableType === 'equipment' && !selectedSvgEquipment) ||
-            (tableType === 'textbox' && !textBoxText.trim())
-          ) ? '#ccc' : '#1976d2',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: (
-            (tableType === 'svg' && !selectedSvgTable) ||
-            (tableType === 'equipment' && !selectedSvgEquipment) ||
-            (tableType === 'textbox' && !textBoxText.trim())
-          ) ? 'not-allowed' : 'pointer',
-          fontSize: '1rem'
-        }}
+         className="btn-action btn-center"
       >
         追加
       </button>

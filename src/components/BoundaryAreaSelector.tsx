@@ -21,18 +21,7 @@ const BoundaryAreaSelector: React.FC<BoundaryAreaSelectorProps> = ({
           <p>SVG読み込み後、テーブル配置可能な境界エリアを設定できます。</p>
           <button 
             onClick={() => onBoundarySet({ x: 0, y: 0, width: 0, height: 0 })}
-            className="boundary-start-button"
-            style={{
-              width: '100%',
-              padding: '0.7rem',
-              backgroundColor: '#4caf50',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '1rem',
-              marginBottom: '0.5rem'
-            }}
+            className="btn-action btn-center"
           >
             境界エリア設定を開始
           </button>
@@ -47,16 +36,7 @@ const BoundaryAreaSelector: React.FC<BoundaryAreaSelectorProps> = ({
           </p>
           <button 
             onClick={onCancel}
-            style={{
-              width: '100%',
-              padding: '0.5rem',
-              backgroundColor: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '0.9rem'
-            }}
+            className="btn-cancel btn-center"
           >
             キャンセル
           </button>

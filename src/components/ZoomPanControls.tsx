@@ -40,15 +40,7 @@ const ZoomPanControls: React.FC<ZoomPanControlsProps> = ({
       
       <button
         onClick={onResetView}
-        style={{
-          padding: '4px 8px',
-          fontSize: '12px',
-          backgroundColor: '#2196f3',
-          color: 'white',
-          border: 'none',
-          borderRadius: '3px',
-          cursor: 'pointer'
-        }}
+        className="btn-cancel btn-mini"
       >
         リセット
       </button>

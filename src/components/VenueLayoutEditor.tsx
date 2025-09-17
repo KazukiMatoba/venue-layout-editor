@@ -31,23 +31,17 @@ const VenueLayoutEditor: React.FC<VenueLayoutEditorProps> = ({
     setError(errorMessage);
   };
 
-  const handleCreateTable = (type: 'rectangle' | 'circle', props: any) => {
+  const handleCreateTable = (type: 'rectangle' | 'circle' | 'svg' | 'textbox', props: any) => {
     if (!svgData) {
       setError('SVG会場図を先に読み込んでください');
       return;
     }
 
     const newTable: TableObject = {
-      id: `table_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `table_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       type,
       position: { x: 100, y: 100 }, // デフォルト位置
       properties: props,
-      style: {
-        fill: '#e3f2fd',
-        stroke: '#1976d2',
-        strokeWidth: 2,
-        opacity: 0.8
-      }
     };
 
     setTables(prev => [...prev, newTable]);

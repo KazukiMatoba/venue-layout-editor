@@ -19,6 +19,7 @@ export interface SVGData {
   height: number;           // SVG高さ（px）
   viewBox: ViewBox;         // SVGビューボックス
   bounds: BoundingBox;      // 境界情報
+  fileName: string;
 }
 
 // 位置情報の型定義
@@ -31,10 +32,14 @@ export interface Position {
 export interface RectangleProps {
   width: number;   // mm単位
   height: number;  // mm単位
+  fillColor: string; // 塗潰色
+  strokeColor: string; // 枠線色
 }
 
 export interface CircleProps {
   radius: number;  // mm単位
+  fillColor: string; // 塗潰色
+  strokeColor: string; // 枠線色
 }
 
 export interface SVGTableProps {
@@ -71,7 +76,7 @@ export interface TableObject {
   type: 'rectangle' | 'circle' | 'svg' | 'textbox';
   position: Position;
   properties: RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
-  style: TableStyle;
+  style?: TableStyle;
 }
 
 // エラー情報の型定義
@@ -170,3 +175,32 @@ export interface BoundaryArea {
 // テーブルタイプとプロパティの型定義
 export type TableType = 'rectangle' | 'circle' | 'svg' | 'textbox';
 export type TableProps = RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
+
+// プロジェクトデータの型定義
+export interface ProjectInfo {
+  name: string;
+  createdAt: string;
+  lastModified: string;
+  version: string;
+}
+
+export interface ProjectData {
+  projectInfo: ProjectInfo;
+  venue: {
+    backgroundImage?: string;
+    svgData?: SVGData;
+    dimensions: {
+      width: number;
+      height: number;
+    };
+  };
+  tables: TableObject[];
+}
+
+// 保存・読み込み関連の型定義
+export interface LoadResult {
+  success: boolean;
+  data?: ProjectData;
+  error?: string;
+  warnings?: string[];
+}

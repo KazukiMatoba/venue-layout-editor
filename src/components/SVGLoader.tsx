@@ -9,9 +9,7 @@ interface SVGLoaderProps {
 }
 
 const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState('');
   const [svgRooms, setSvgRooms] = useState<SVGRoomInfo[]>([]);
   const [isLoadingRooms, setIsLoadingRooms] = useState(false);
@@ -34,45 +32,6 @@ const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
     loadSvgRooms();
   }, []);
 
-  const handleFileSelect = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedPreset(''); // ファイル選択時はプリセット選択をリセット
-      handleFile(file);
-    }
-  };
-
-  const handleFile = async (file: File) => {
-    // ファイル形式チェック
-    if (!file.type.includes('svg') && !file.name.toLowerCase().endsWith('.svg')) {
-      onError('SVGファイルを選択してください。対応形式: .svg');
-      return;
-    }
-
-    // ファイルサイズチェック（10MB制限）
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      onError('ファイルサイズが大きすぎます。10MB以下のファイルを選択してください。');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const content = await readFile(file);
-      const svgData = parseSVGContent(content);
-      onSVGLoad(svgData);
-    } catch (error) {
-      onError(error instanceof Error ? error.message : 'ファイルの読み込み中にエラーが発生しました');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   // プリセットSVGファイルを読み込む関数
   const handlePresetSelect = async (filename: string) => {
     if (!filename) return;
@@ -87,7 +46,9 @@ const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
       }
 
       const content = await response.text();
-      const svgData = parseSVGContent(content);
+      const svgData = parseSVGContent(content, filename);
+      svgData.fileName = filename.replace(/\.[^/.]+$/, '');
+
       onSVGLoad(svgData);
     } catch (error) {
       onError(error instanceof Error ? error.message : 'プリセットファイルの読み込み中にエラーが発生しました');
@@ -97,20 +58,7 @@ const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
     }
   };
 
-  const readFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve(e.target?.result as string);
-      };
-      reader.onerror = () => {
-        reject(new Error('ファイルの読み込み中にエラーが発生しました'));
-      };
-      reader.readAsText(file);
-    });
-  };
-
-  const parseSVGContent = (content: string): SVGData => {
+  const parseSVGContent = (content: string, filename: string): SVGData => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(content, 'image/svg+xml');
 
@@ -146,6 +94,8 @@ const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
       }
     }
 
+    const fileName = filename;
+
     return {
       content,
       width,
@@ -156,28 +106,9 @@ const SVGLoader: React.FC<SVGLoaderProps> = ({ onSVGLoad, onError }) => {
         minY: viewBox.y,
         maxX: viewBox.x + viewBox.width,
         maxY: viewBox.y + viewBox.height
-      }
+      },
+      fileName
     };
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleFile(file);
-    }
   };
 
   return (

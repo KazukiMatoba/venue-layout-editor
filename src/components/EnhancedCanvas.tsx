@@ -28,6 +28,7 @@ interface EnhancedCanvasProps {
   onHorizontallyCentered?: (ids: string[]) => void;
   onAlignRight?: (ids: string[]) => void;
   onTextBoxDoubleClick?: (id: string) => void;
+  lastSaveTime?: Date | null;
 }
 
 const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
@@ -53,6 +54,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onHorizontallyCentered,
   onAlignRight,
   onTextBoxDoubleClick,
+  lastSaveTime,
 }) => {
   // 動的なキャンバスサイズ計算
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
@@ -293,7 +295,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const handleStageClick = (e: any) => {
     // クリックされたターゲットを取得
     const clickedOnEmpty = e.target === e.target.getStage();
-    
+
     if (clickedOnEmpty) {
       // 空の場所がクリックされた場合、選択を解除
       onTableSelect?.(null, false);
@@ -529,7 +531,19 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   return (
     <div className="enhanced-canvas">
       <div className="canvas-header">
-        <h4>会場レイアウト</h4>
+        <div className="canvas-header-left">
+          <h4>会場レイアウト</h4>
+          {lastSaveTime && (
+            <span className="last-save-time">
+              最終保存: {lastSaveTime.toLocaleTimeString('ja-JP', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+              })}
+            </span>
+          )}
+
+        </div>
         <ZoomPanControls
           scale={userScale}
           onScaleChange={handleScaleChange}
@@ -787,7 +801,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               };
 
               if (table.type === 'rectangle') {
-                const props = table.properties as { width: number; height: number };
+                const props = table.properties as { width: number; height: number; fillColor: string; strokeColor: string };
                 return (
                   <React.Fragment key={table.id}>
                     <Rect
@@ -795,10 +809,10 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       y={displayY - (props.height * finalScale) / 2}
                       width={props.width * finalScale}
                       height={props.height * finalScale}
-                      fill={table.style.fill}
-                      stroke={table.style.stroke}
+                      fill={props.fillColor}
+                      stroke={props.strokeColor}
                       strokeWidth={1}
-                      opacity={table.style.opacity}
+                      opacity={1}
                       draggable={!isBoundarySettingMode}
                       onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
                       onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
@@ -821,17 +835,17 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   </React.Fragment>
                 );
               } else if (table.type === 'circle') {
-                const props = table.properties as { radius: number };
+                const props = table.properties as { radius: number; fillColor: string; strokeColor: string };
                 return (
                   <React.Fragment key={table.id}>
                     <Circle
                       x={displayX}
                       y={displayY}
                       radius={props.radius * finalScale}
-                      fill={table.style.fill}
-                      stroke={table.style.stroke}
+                      fill={props.fillColor}
+                      stroke={props.strokeColor}
                       strokeWidth={1}
-                      opacity={table.style.opacity}
+                      opacity={1}
                       draggable={!isBoundarySettingMode}
                       onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
                       onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
@@ -882,7 +896,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       y={displayY - (props.height * finalScale) / 2}
                       width={props.width * finalScale}
                       height={props.height * finalScale}
-                      opacity={isSelected ? 0.8 : table.style.opacity}
+                      opacity={1}
                       draggable={!isBoundarySettingMode}
                       onClick={(e) => !isBoundarySettingMode && e.evt.button === 0 && onTableSelect?.(table.id, e.evt.ctrlKey)}
                       onTap={(e) => !isBoundarySettingMode && onTableSelect?.(table.id, false)}
