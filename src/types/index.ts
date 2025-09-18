@@ -39,7 +39,7 @@ export interface RectangleProps {
 
 
 // 回転した矩形に外接する矩形のサイズを計算する関数
-export function _circumscriptionSize(props: RectangleProps | SVGTableProps | TextBoxProps): { width: number; height: number } {
+export function circumscriptionSize(props: RectangleProps | SVGTableProps | TextBoxProps): { width: number; height: number } {
   const theta = props.rotationAngle * Math.PI / 180;
   const width = Math.abs(props.width * Math.cos(theta)) + Math.abs(props.height * Math.sin(theta));
   const height = Math.abs(props.width * Math.sin(theta)) + Math.abs(props.height * Math.cos(theta));

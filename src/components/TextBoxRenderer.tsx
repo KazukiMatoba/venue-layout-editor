@@ -1,6 +1,7 @@
 import React from 'react';
 import { Rect, Text, Group } from 'react-konva';
 import type { TextBoxProps } from '../types';
+import { circumscriptionSize } from '../types';
 
 interface TextBoxRendererProps {
   id: string;
@@ -73,10 +74,12 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
     <Group>
       {/* 背景とボーダー */}
       <Rect
-        x={boxX}
-        y={boxY}
+        x={x}
+        y={y}
         width={scaledWidth}
         height={scaledHeight}
+        offsetX={scaledWidth / 2}
+        offsetY={scaledHeight / 2}
         rotation={rotationAngle}
         fill={backgroundColor}
         stroke={borderColor}
@@ -92,8 +95,10 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
       
       {/* テキスト */}
       <Text
-        x={textX}
-        y={textY}
+        x={x}
+        y={y}
+        offsetX={scaledWidth / 2 - scaledPadding}
+        offsetY={scaledHeight / 2 - scaledPadding}
         rotation={rotationAngle}
         text={text}
         fontSize={scaledFontSize}
@@ -107,19 +112,26 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
       />
       
       {/* 選択状態の枠線 */}
-      {isSelected && (
-        <Rect
-          x={boxX}
-          y={boxY}
-          width={scaledWidth}
-          height={scaledHeight}
-          rotation={rotationAngle}
-          fill="transparent"
-          stroke={isFirstSelected ? "#f44336" : "#ff9800"}
-          strokeWidth={2}
-          listening={false}
-        />
-      )}
+      {isSelected && (() => {
+        const circumscription = circumscriptionSize(properties);
+        const scaledCircumscriptionWidth = circumscription.width * scale;
+        const scaledCircumscriptionHeight = circumscription.height * scale;
+        
+        return (
+          <Rect
+            x={x}
+            y={y}
+            width={scaledCircumscriptionWidth}
+            height={scaledCircumscriptionHeight}
+            offsetX={scaledCircumscriptionWidth / 2}
+            offsetY={scaledCircumscriptionHeight / 2}
+            fill="transparent"
+            stroke={isFirstSelected ? "#f44336" : "#ff9800"}
+            strokeWidth={2}
+            listening={false}
+          />
+        );
+      })()}
     </Group>
   );
 };

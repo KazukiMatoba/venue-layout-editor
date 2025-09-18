@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import type { SVGTableProps } from '../types';
 
 interface RectangleProps {
     width: number;
@@ -17,9 +18,9 @@ interface CircleProps {
 interface ShapeEditorProps {
     isOpen: boolean;
     shapeId: string;
-    shapeType: 'rectangle' | 'circle';
-    properties: RectangleProps | CircleProps;
-    onSave: (id: string, properties: RectangleProps | CircleProps) => void;
+    shapeType: 'rectangle' | 'circle' | 'svg';
+    properties: RectangleProps | CircleProps | SVGTableProps;
+    onSave: (id: string, properties: RectangleProps | CircleProps | SVGTableProps) => void;
     onCancel: () => void;
 }
 
@@ -31,33 +32,53 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
     onSave,
     onCancel
 }) => {
-    // 共通プロパティ
-    const [fillColor, setFillColor] = useState(properties.fillColor);
-    const [strokeColor, setStrokeColor] = useState(properties.strokeColor);
+    type FillColorProps = RectangleProps | CircleProps;
+    const [fillColor, setFillColor] = useState(shapeType !== 'svg' ? (properties as FillColorProps).fillColor : "");
 
-    // Rectangle専用プロパティ
-    const [width, setWidth] = useState(shapeType === 'rectangle' ? (properties as RectangleProps).width : 1000);
-    const [height, setHeight] = useState(shapeType === 'rectangle' ? (properties as RectangleProps).height : 1000);
-    const [rotationAngle, setRotationAngle] = useState(shapeType === 'rectangle' ? (properties as RectangleProps).rotationAngle : 0);
+    type StrokeColorProps = RectangleProps | CircleProps;
+    const [strokeColor, setStrokeColor] = useState(shapeType !== 'svg' ? (properties as StrokeColorProps).strokeColor : "");
 
-    // Circle専用プロパティ
-    const [radius, setRadius] = useState(shapeType === 'circle' ? (properties as CircleProps).radius : 500);
+    type RotationAngleProp = RectangleProps | SVGTableProps;
+    const [rotationAngle, setRotationAngle] = useState(shapeType !== 'circle' ? (properties as RotationAngleProp).rotationAngle : 0);
+
+    type WidthProp = RectangleProps | SVGTableProps;
+    const [width, setWidth] = useState(shapeType !== 'circle' ? (properties as WidthProp).width : 0);
+
+    type HeightProp = RectangleProps | SVGTableProps;
+    const [height, setHeight] = useState(shapeType !== 'circle' ? (properties as HeightProp).height : 0);
+
+    const [radius, setRadius] = useState(shapeType === 'circle' ? (properties as CircleProps).radius : 0);
+
+    const [svgContent, setSvgContent] = useState(shapeType === 'svg' ? (properties as SVGTableProps).svgContent : "");
+    const [originalWidth, setOriginalWidth] = useState(shapeType === 'svg' ? (properties as SVGTableProps).originalWidth : 0);
+    const [originalHeight, setOriginalHeight] = useState(shapeType === 'svg' ? (properties as SVGTableProps).originalHeight : 0);
+    const [filename, setFilename] = useState(shapeType === 'svg' ? (properties as SVGTableProps).filename : "");
+
 
     // フォーカス管理用のref
     const modalRef = useRef<HTMLDivElement>(null);
 
     // プロパティが変更されたときに状態を更新
     useEffect(() => {
-        setFillColor(properties.fillColor);
-        setStrokeColor(properties.strokeColor);
-
         if (shapeType === 'rectangle') {
             const rectProps = properties as RectangleProps;
             setWidth(rectProps.width);
             setHeight(rectProps.height);
+            setFillColor(rectProps.fillColor);
+            setStrokeColor(rectProps.strokeColor);
+            setRotationAngle(rectProps.rotationAngle);
+        } else if (shapeType === 'svg') {
+            const svgProps = properties as SVGTableProps;
+            setSvgContent(svgProps.svgContent);
+            setOriginalWidth(svgProps.originalWidth);
+            setOriginalHeight(svgProps.originalHeight);
+            setFilename(svgProps.filename);
+            setRotationAngle(svgProps.rotationAngle);
         } else if (shapeType === 'circle') {
             const circleProps = properties as CircleProps;
             setRadius(circleProps.radius);
+            setFillColor(circleProps.fillColor);
+            setStrokeColor(circleProps.strokeColor);
         }
     }, [properties, shapeType]);
 
@@ -69,7 +90,7 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
     }, [isOpen]);
 
     const handleSave = () => {
-        let updatedProperties: RectangleProps | CircleProps;
+        let updatedProperties: RectangleProps | CircleProps | SVGTableProps;
 
         if (shapeType === 'rectangle') {
             updatedProperties = {
@@ -77,6 +98,16 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                 height,
                 fillColor,
                 strokeColor,
+                rotationAngle
+            };
+        }else if (shapeType === 'svg') {
+            updatedProperties = {
+                svgContent,
+                width,
+                height,
+                originalWidth,
+                originalHeight,
+                filename,
                 rotationAngle
             };
         } else {
@@ -131,13 +162,13 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                 onKeyDown={handleKeyDown}
                 ref={modalRef}
             >
-                <h3 style={{ margin: 0 }}>{shapeType === 'rectangle' ? '長方形' : '円形'}の編集</h3>
+                <h3 style={{ margin: 0 }}>オブジェクトの編集</h3>
 
                 {/* サイズ設定 */}
                 <div style={{ marginBottom: '1.5rem' }}>
                     {shapeType === 'rectangle' ? (
                         <>
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ marginBottom: '0.5rem' }}>
                                 <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                                     幅 (mm):
                                 </label>
@@ -157,7 +188,7 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                                     }}
                                 />
                             </div>
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ marginBottom: '0.5rem' }}>
                                 <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                                     高さ (mm):
                                 </label>
@@ -177,7 +208,7 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                                     }}
                                 />
                             </div>
-                            <div style={{ marginBottom: '1rem' }}>
+                            <div style={{ marginBottom: '0.5rem' }}>
                                 <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                                     回転角度 (度):
                                 </label>
@@ -197,19 +228,53 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                                     }}
                                 />
                             </div>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                    塗りつぶし色:
+                                </label>
+                                <input
+                                    type="color"
+                                    value={fillColor}
+                                    onChange={(e) => setFillColor(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        height: '40px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                    枠線色:
+                                </label>
+                                <input
+                                    type="color"
+                                    value={strokeColor}
+                                    onChange={(e) => setStrokeColor(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        height: '40px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                            </div>
                         </>
-                    ) : (
-                        <div style={{ marginBottom: '1rem' }}>
+                    ) : shapeType === 'svg' ? (
+                        <div style={{ marginBottom: '0.5rem' }}>
                             <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                                半径 (mm):
+                                回転角度 (度):
                             </label>
                             <input
                                 type="number"
-                                value={radius}
-                                onChange={(e) => setRadius(Number(e.target.value))}
-                                min="5"
-                                max="2500"
-                                step="5"
+                                value={rotationAngle}
+                                onChange={(e) => setRotationAngle(Number(e.target.value))}
+                                min="0"
+                                max="360"
+                                step="1"
                                 style={{
                                     width: '100%',
                                     padding: '0.5rem',
@@ -219,45 +284,64 @@ const ShapeEditor: React.FC<ShapeEditorProps> = ({
                                 }}
                             />
                         </div>
+                    ) : (
+                        <>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                    半径 (mm):
+                                </label>
+                                <input
+                                    type="number"
+                                    value={radius}
+                                    onChange={(e) => setRadius(Number(e.target.value))}
+                                    min="5"
+                                    max="2500"
+                                    step="5"
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.5rem',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        fontSize: '1rem'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                    塗りつぶし色:
+                                </label>
+                                <input
+                                    type="color"
+                                    value={fillColor}
+                                    onChange={(e) => setFillColor(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        height: '40px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                    枠線色:
+                                </label>
+                                <input
+                                    type="color"
+                                    value={strokeColor}
+                                    onChange={(e) => setStrokeColor(e.target.value)}
+                                    style={{
+                                        width: '100%',
+                                        height: '40px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer'
+                                    }}
+                                />
+                            </div>
+                        </>
                     )}
-                </div>
-
-                {/* 色設定 */}
-                <div style={{ marginBottom: '2rem' }}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                            塗りつぶし色:
-                        </label>
-                        <input
-                            type="color"
-                            value={fillColor}
-                            onChange={(e) => setFillColor(e.target.value)}
-                            style={{
-                                width: '100%',
-                                height: '40px',
-                                border: '1px solid #ccc',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-                            枠線色:
-                        </label>
-                        <input
-                            type="color"
-                            value={strokeColor}
-                            onChange={(e) => setStrokeColor(e.target.value)}
-                            style={{
-                                width: '100%',
-                                height: '40px',
-                                border: '1px solid #ccc',
-                                borderRadius: '4px',
-                                cursor: 'pointer'
-                            }}
-                        />
-                    </div>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'center' }}>

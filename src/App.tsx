@@ -9,7 +9,7 @@ import TextBoxEditor from './components/TextBoxEditor'
 import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import type { SVGData, TableObject, BoundaryArea, TextBoxProps, ProjectData } from './types/index'
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, circumscriptionSize } from './types';
 import './App.css'
 
 function App() {
@@ -210,7 +210,8 @@ function App() {
         return props.radius * 2; // 直径
       } else {
         const props = primaryTable.properties as any;
-        return props.height;
+        const circumscription = circumscriptionSize(props);
+        return circumscription.height;
       }
       return 0;
     }
@@ -226,7 +227,8 @@ function App() {
             return props.radius * 2; // 直径
           } else {
             const props = table.properties as any;
-            return props.height;
+            const circumscription = circumscriptionSize(props);
+            return circumscription.height;
           }
           return 0;
         }
@@ -283,7 +285,8 @@ function App() {
         return props.radius * 2; // 直径
       } else {
         const props = primaryTable.properties as any;
-        return props.height;
+        const circumscription = circumscriptionSize(props);
+        return circumscription.height;
       }
       return 0;
     }
@@ -299,7 +302,8 @@ function App() {
             return props.radius * 2; // 直径
           } else {
             const props = table.properties as any;
-            return props.height;
+            const circumscription = circumscriptionSize(props);
+            return circumscription.height;
           }
           return 0;
         }
@@ -331,7 +335,8 @@ function App() {
         return props.radius * 2; // 直径
       } else {
         const props = primaryTable.properties as any;
-        return props.width;
+        const circumscription = circumscriptionSize(props);
+        return circumscription.width;
       }
       return 0;
     }
@@ -347,7 +352,8 @@ function App() {
             return props.radius * 2; // 直径
           } else {
             const props = table.properties as any;
-            return props.width;
+            const circumscription = circumscriptionSize(props);
+            return circumscription.width;
           }
           return 0;
         }
@@ -404,7 +410,8 @@ function App() {
         return props.radius * 2; // 直径
       } else {
         const props = primaryTable.properties as any;
-        return props.width;
+        const circumscription = circumscriptionSize(props);
+        return circumscription.width;
       }
       return 0;
     }
@@ -420,7 +427,8 @@ function App() {
             return props.radius * 2; // 直径
           } else {
             const props = table.properties as any;
-            return props.width;
+            const circumscription = circumscriptionSize(props);
+            return circumscription.width;
           }
           return 0;
         }
@@ -443,7 +451,7 @@ function App() {
     setEditingTextBoxId(id);
   };
 
-  // circle と rectangle のダブルクリック処理
+  // ダブルクリック処理
   const handleShapeDoubleClick = (id: string) => {
     setEditingShapeId(id);
   };
@@ -615,7 +623,7 @@ function App() {
         )}
 
         {/* 図形編集モーダル */}
-        {editingShape && (editingShape.type === 'rectangle' || editingShape.type === 'circle') && (
+        {editingShape && (editingShape.type === 'rectangle' || editingShape.type === 'circle' || editingShape.type === 'svg') && (
           <ShapeEditor
             isOpen={!!editingShapeId}
             shapeId={editingShapeId!}

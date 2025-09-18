@@ -82,6 +82,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         strokeColor: strokeColor
       });
     } else if (tableType === 'svg' && selectedSvgTable) {
+      
       // SVGテーブルを読み込んで作成
       try {
         const response = await fetch(`/resource/table/${selectedSvgTable}`);
@@ -102,7 +103,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             height,
             originalWidth: width,
             originalHeight: height,
-            filename: selectedTable.filename
+            filename: selectedTable.filename,
+            rotationAngle: rotationAngle
           });
         }
       } catch (error) {
@@ -130,7 +132,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             height,
             originalWidth: width,
             originalHeight: height,
-            filename: selectedEquipment.filename
+            filename: selectedEquipment.filename,
+            rotationAngle: rotationAngle
           });
         }
       } catch (error) {
@@ -344,30 +347,45 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               読み込み中...
             </div>
           ) : (
-            <select
-              value={selectedSvgTable}
-              onChange={(e) => setSelectedSvgTable(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '0.9rem'
-              }}
-            >
-              <option value="">-- テーブルを選択してください --</option>
-              {svgTables.map((table) => (
-                <option key={table.filename} value={table.filename}>
-                  {table.name}
-                </option>
-              ))}
-            </select>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <select
+                value={selectedSvgTable}
+                onChange={(e) => setSelectedSvgTable(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <option value="">-- テーブルを選択してください --</option>
+                {svgTables.map((table) => (
+                  <option key={table.filename} value={table.filename}>
+                    {table.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           {svgTables.length === 0 && !isLoadingSvgTables && (
             <div style={{ padding: '0.5rem', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>
               利用可能なプリセットテーブルがありません
             </div>
           )}
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              回転角度 (度):
+            </label>
+            <input
+              type="number"
+              value={rotationAngle}
+              onChange={(e) => setRotationAngle(Number(e.target.value))}
+              min="0"
+              max="360"
+              style={{ width: '100%', padding: '0.3rem' }}
+            />
+          </div>
         </div>
       ) : tableType === 'equipment' ? (
         <div className="svg-settings" style={{ marginBottom: '1rem' }}>
@@ -377,30 +395,45 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               読み込み中...
             </div>
           ) : (
-            <select
-              value={selectedSvgEquipment}
-              onChange={(e) => setSelectedSvgEquipment(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ccc',
-                borderRadius: '4px',
-                fontSize: '0.9rem'
-              }}
-            >
-              <option value="">-- 備品を選択してください --</option>
-              {svgEquipments.map((equipment) => (
-                <option key={equipment.filename} value={equipment.filename}>
-                  {equipment.name}
-                </option>
-              ))}
-            </select>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <select
+                value={selectedSvgEquipment}
+                onChange={(e) => setSelectedSvgEquipment(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem'
+                }}
+              >
+                <option value="">-- 備品を選択してください --</option>
+                {svgEquipments.map((equipment) => (
+                  <option key={equipment.filename} value={equipment.filename}>
+                    {equipment.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
           {svgEquipments.length === 0 && !isLoadingSvgEquipments && (
             <div style={{ padding: '0.5rem', fontSize: '0.8rem', color: '#999', textAlign: 'center' }}>
               利用可能なプリセット備品がありません
             </div>
           )}
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              回転角度 (度):
+            </label>
+            <input
+              type="number"
+              value={rotationAngle}
+              onChange={(e) => setRotationAngle(Number(e.target.value))}
+              min="0"
+              max="360"
+              style={{ width: '100%', padding: '0.3rem' }}
+            />
+          </div>
         </div>
       ) : tableType === 'textbox' ? (
         <div className="textbox-settings" style={{ marginBottom: '1rem' }}>
