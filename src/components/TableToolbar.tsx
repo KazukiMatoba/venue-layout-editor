@@ -25,6 +25,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
   const [isLoadingSvgEquipments, setIsLoadingSvgEquipments] = useState(false);
   const [fillColor, setFillColor] = useState('#cccccc');
   const [strokeColor, setStrokeColor] = useState('#000000');
+  const [rotationAngle, setRotationAngle] = useState(0);
 
   // テキストボックス設定
   const [textBoxText, setTextBoxText] = useState('テキスト');
@@ -67,9 +68,19 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
 
   const handleCreateTable = async () => {
     if (tableType === 'rectangle') {
-      onCreateTable('rectangle', { width: rectangleWidth, height: rectangleHeight, fillColor: fillColor, strokeColor: strokeColor });
+      onCreateTable('rectangle', {
+        width: rectangleWidth, 
+        height: rectangleHeight, 
+        fillColor: fillColor, 
+        strokeColor: strokeColor, 
+        rotationAngle: rotationAngle
+      });
     } else if (tableType === 'circle') {
-      onCreateTable('circle', { radius: circleRadius, fillColor: fillColor, strokeColor: strokeColor });
+      onCreateTable('circle', {
+        radius: circleRadius, 
+        fillColor: fillColor, 
+        strokeColor: strokeColor
+      });
     } else if (tableType === 'svg' && selectedSvgTable) {
       // SVGテーブルを読み込んで作成
       try {
@@ -157,7 +168,8 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
           fontFamily: textBoxFontFamily,
           width: Math.max(widthMm, 50), // 最小幅50mm
           height: Math.max(heightMm, 20), // 最小高さ20mm
-          textColor: textBoxTextColor
+          textColor: textBoxTextColor,
+          rotationAngle: rotationAngle
         });
       }
     }
@@ -246,6 +258,19 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               onChange={(e) => setRectangleHeight(Number(e.target.value))}
               min="50"
               max="2000"
+              style={{ width: '100%', padding: '0.3rem' }}
+            />
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              回転角度 (度):
+            </label>
+            <input
+              type="number"
+              value={rotationAngle}
+              onChange={(e) => setRotationAngle(Number(e.target.value))}
+              min="0"
+              max="360"
               style={{ width: '100%', padding: '0.3rem' }}
             />
           </div>
@@ -425,6 +450,19 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
               <option value="'MS Mincho', serif">MS 明朝</option>
               <option value="'Meiryo', sans-serif">メイリオ</option>
             </select>
+          </div>
+          <div style={{ marginBottom: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+              回転角度 (度):
+            </label>
+            <input
+              type="number"
+              value={rotationAngle}
+              onChange={(e) => setRotationAngle(Number(e.target.value))}
+              min="0"
+              max="360"
+              style={{ width: '100%', padding: '0.3rem' }}
+            />
           </div>
           <div style={{ marginBottom: '0.5rem' }}>
             <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>

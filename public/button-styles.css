@@ -25,7 +25,8 @@
   display: inline-block;
   padding: 0.4em 1.6em;
   font-size: 0.8em;
-  color: #7fbfff;
+  background-color: #7fbfff;
+  color: #ffffff;
   text-decoration: none;
   user-select: none;
   border: 1px #7fbfff solid;
@@ -36,7 +37,7 @@
 
 .btn-action:hover:not(:disabled) {
   color: #fff;
-  box-shadow: inset #7fbfff 0 0 0 2em;
+  box-shadow: inset #7f7fff 0 0 0 2em;
 }
 
 .btn-action:disabled {
@@ -52,7 +53,8 @@
   display: inline-block;
   padding: 0.4em 1.6em;
   font-size: 0.8em;
-  color: #ff7fbf;
+  background-color: #ff7fbf;
+  color: #ffffff;
   text-decoration: none;
   user-select: none;
   border: 1px #ff7fbf solid;
@@ -63,7 +65,7 @@
 
 .btn-cancel:hover {
   color: #fff;
-  box-shadow: inset #ff7fbf 0 0 0 2em;
+  box-shadow: inset #ff7f7f 0 0 0 2em;
 }
 
 

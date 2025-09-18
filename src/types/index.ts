@@ -34,6 +34,19 @@ export interface RectangleProps {
   height: number;  // mm単位
   fillColor: string; // 塗潰色
   strokeColor: string; // 枠線色
+  rotationAngle: number; //回転角度
+}
+
+
+// 回転した矩形に外接する矩形のサイズを計算する関数
+export function _circumscriptionSize(props: RectangleProps | SVGTableProps | TextBoxProps): { width: number; height: number } {
+  const theta = props.rotationAngle * Math.PI / 180;
+  const width = Math.abs(props.width * Math.cos(theta)) + Math.abs(props.height * Math.sin(theta));
+  const height = Math.abs(props.width * Math.sin(theta)) + Math.abs(props.height * Math.cos(theta));
+  return {
+    width,
+    height
+  };
 }
 
 export interface CircleProps {
@@ -49,6 +62,7 @@ export interface SVGTableProps {
   originalWidth: number;  // SVGの元サイズ
   originalHeight: number; // SVGの元サイズ
   filename: string;
+  rotationAngle: number; //回転角度
 }
 
 export interface TextBoxProps {
@@ -58,6 +72,7 @@ export interface TextBoxProps {
   width: number;     // mm単位（自動調整）
   height: number;    // mm単位（自動調整）
   textColor: string;
+  rotationAngle: number; //回転角度
 }
 
 export interface TableStyle {

@@ -41,7 +41,8 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
     fontFamily,
     width,
     height,
-    textColor
+    textColor,
+    rotationAngle
   } = properties;
 
   // デフォルト値
@@ -76,6 +77,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
         y={boxY}
         width={scaledWidth}
         height={scaledHeight}
+        rotation={rotationAngle}
         fill={backgroundColor}
         stroke={borderColor}
         strokeWidth={scaledBorderWidth}
@@ -92,6 +94,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
       <Text
         x={textX}
         y={textY}
+        rotation={rotationAngle}
         text={text}
         fontSize={scaledFontSize}
         fontFamily={fontFamily}
@@ -110,6 +113,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
           y={boxY}
           width={scaledWidth}
           height={scaledHeight}
+          rotation={rotationAngle}
           fill="transparent"
           stroke={isFirstSelected ? "#f44336" : "#ff9800"}
           strokeWidth={2}

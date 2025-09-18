@@ -6,6 +6,7 @@ import BoundaryAreaSelector from './components/BoundaryAreaSelector'
 import GridSnapControls from './components/GridSnapControls'
 import ErrorDisplay from './components/ErrorDisplay'
 import TextBoxEditor from './components/TextBoxEditor'
+import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
 import { useErrorHandler } from './hooks/useErrorHandler'
 import type { SVGData, TableObject, BoundaryArea, TextBoxProps, ProjectData } from './types/index'
@@ -25,6 +26,9 @@ function App() {
 
   // テキストボックス編集用の状態
   const [editingTextBoxId, setEditingTextBoxId] = useState<string | null>(null)
+
+  // 図形編集用の状態
+  const [editingShapeId, setEditingShapeId] = useState<string | null>(null)
 
   // プロジェクト管理用の状態
   const [currentProjectName, setCurrentProjectName] = useState<string>('')
@@ -439,6 +443,11 @@ function App() {
     setEditingTextBoxId(id);
   };
 
+  // circle と rectangle のダブルクリック処理
+  const handleShapeDoubleClick = (id: string) => {
+    setEditingShapeId(id);
+  };
+
   const handleTextBoxSave = (id: string, properties: TextBoxProps) => {
     setTables(prev => prev.map(table =>
       table.id === id
@@ -450,6 +459,20 @@ function App() {
 
   const handleTextBoxEditCancel = () => {
     setEditingTextBoxId(null);
+  };
+
+  // 図形編集ハンドラー
+  const handleShapeSave = (id: string, properties: any) => {
+    setTables(prev => prev.map(table =>
+      table.id === id
+        ? { ...table, properties }
+        : table
+    ));
+    setEditingShapeId(null);
+  };
+
+  const handleShapeEditCancel = () => {
+    setEditingShapeId(null);
   };
 
   // プロジェクト読み込みハンドラー
@@ -470,6 +493,7 @@ function App() {
     // 選択状態をクリア
     setSelectedTableIds([]);
     setEditingTextBoxId(null);
+    setEditingShapeId(null);
 
     // 境界エリアをクリア
     setBoundaryArea(null);
@@ -482,6 +506,7 @@ function App() {
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
   const primarySelectedTable = selectedTables.length > 0 ? selectedTables[0] : null
   const editingTextBox = editingTextBoxId ? tables.find(table => table.id === editingTextBoxId) : null
+  const editingShape = editingShapeId ? tables.find(table => table.id === editingShapeId) : null
 
   return (
     <div className="App">
@@ -567,6 +592,7 @@ function App() {
                 onHorizontallyCentered={handleHorizontallyCentered}
                 onAlignRight={handleAlignRight}
                 onTextBoxDoubleClick={handleTextBoxDoubleClick}
+                onShapeDoubleClick={handleShapeDoubleClick}
                 lastSaveTime={lastSaveTime}
               />
             ) : (
@@ -585,6 +611,18 @@ function App() {
             properties={editingTextBox.properties as TextBoxProps}
             onSave={handleTextBoxSave}
             onCancel={handleTextBoxEditCancel}
+          />
+        )}
+
+        {/* 図形編集モーダル */}
+        {editingShape && (editingShape.type === 'rectangle' || editingShape.type === 'circle') && (
+          <ShapeEditor
+            isOpen={!!editingShapeId}
+            shapeId={editingShapeId!}
+            shapeType={editingShape.type}
+            properties={editingShape.properties as any}
+            onSave={handleShapeSave}
+            onCancel={handleShapeEditCancel}
           />
         )}
       </div>

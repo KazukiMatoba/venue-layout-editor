@@ -20,6 +20,7 @@ const TextBoxEditor: React.FC<TextBoxEditorProps> = ({
     const [fontSize, setFontSize] = useState(properties.fontSize);
     const [fontFamily, setFontFamily] = useState(properties.fontFamily);
     const [textColor, setTextColor] = useState(properties.textColor);
+    const [rotationAngle, setRotationAngle] = useState(properties.rotationAngle);
 
     // プロパティが変更されたときに状態を更新
     useEffect(() => {
@@ -140,7 +141,8 @@ const TextBoxEditor: React.FC<TextBoxEditorProps> = ({
                 fontFamily,
                 width: Math.max(widthMm, 50), // 最小幅50mm
                 height: Math.max(heightMm, 20), // 最小高さ20mm
-                textColor
+                textColor,
+                rotationAngle
             };
 
             onSave(textBoxId, updatedProperties);
@@ -188,7 +190,7 @@ const TextBoxEditor: React.FC<TextBoxEditorProps> = ({
             >
                 <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>テキストボックス編集</h3>
 
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
                     <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         テキスト:
                     </label>
@@ -242,6 +244,20 @@ const TextBoxEditor: React.FC<TextBoxEditorProps> = ({
                     </div>
                 </div>
 
+                <div style={{ marginBottom: '0.5rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.2rem' }}>
+                        回転角度 (度):
+                    </label>
+                    <input
+                    type="number"
+                    value={rotationAngle}
+                    onChange={(e) => setRotationAngle(Number(e.target.value))}
+                    min="0"
+                    max="360"
+                    style={{ width: '100%', padding: '0.3rem' }}
+                    />
+                </div>
+
                 <div style={{ marginBottom: '2rem' }}>
                     <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '0.5rem', fontWeight: 'bold' }}>
                         文字色:
@@ -254,40 +270,20 @@ const TextBoxEditor: React.FC<TextBoxEditorProps> = ({
                     />
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                    <button
-                        onClick={onCancel}
-                        style={{
-                            padding: '0.7rem 1.5rem',
-                            backgroundColor: '#6c757d',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontSize: '1rem'
-                        }}
-                    >
-                        キャンセル
-                    </button>
+                <div style={{ display: 'flex', justifyContent: 'center' }}>
                     <button
                         onClick={handleSave}
                         disabled={!text.trim()}
-                        style={{
-                            padding: '0.7rem 1.5rem',
-                            backgroundColor: !text.trim() ? '#ccc' : '#1976d2',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: !text.trim() ? 'not-allowed' : 'pointer',
-                            fontSize: '1rem'
-                        }}
+                        className='btn-action btn-mr'
                     >
-                        保存 (Ctrl+Enter)
+                        保存
                     </button>
-                </div>
-
-                <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#666', textAlign: 'center' }}>
-                    Escキーでキャンセル、Ctrl+Enterで保存
+                    <button
+                        onClick={onCancel}
+                        className='btn-cancel'
+                    >
+                        キャンセル
+                    </button>
                 </div>
             </div>
         </div>

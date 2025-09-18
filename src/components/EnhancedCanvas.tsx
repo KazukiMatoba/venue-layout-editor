@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Circle, Text, Image, Line } from 'react-konva';
 import ContextMenu from './ContextMenu';
 import ZoomPanControls from './ZoomPanControls';
 import TextBoxRenderer from './TextBoxRenderer';
-import type { SVGData, TableObject, Position, BoundaryArea, TextBoxProps } from '../types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps } from '../types';
 
 interface EnhancedCanvasProps {
   svgData: SVGData;
@@ -28,6 +28,7 @@ interface EnhancedCanvasProps {
   onHorizontallyCentered?: (ids: string[]) => void;
   onAlignRight?: (ids: string[]) => void;
   onTextBoxDoubleClick?: (id: string) => void;
+  onShapeDoubleClick?: (id: string) => void;
   lastSaveTime?: Date | null;
 }
 
@@ -54,6 +55,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onHorizontallyCentered,
   onAlignRight,
   onTextBoxDoubleClick,
+  onShapeDoubleClick,
   lastSaveTime,
 }) => {
   // 動的なキャンバスサイズ計算
@@ -237,47 +239,6 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
     // 絶対座標に戻す
     return boundaryStart + snappedRelative;
-  };
-
-  // 複数選択時の左上テーブルを判定する関数
-  const getLeadTableId = (tables: TableObject[], selectedIds: string[]): string => {
-    const selectedTables = tables.filter(table => selectedIds.includes(table.id));
-    if (selectedTables.length === 0) return '';
-
-    // 左上角の座標を計算してソート
-    const tablesWithTopLeft = selectedTables.map(table => {
-      let leftTopX: number, leftTopY: number;
-
-      if (table.type === 'rectangle') {
-        const props = table.properties as { width: number; height: number };
-        leftTopX = table.position.x - props.width / 2;
-        leftTopY = table.position.y - props.height / 2;
-      } else if (table.type === 'svg') {
-        const props = table.properties as any;
-        leftTopX = table.position.x - props.width / 2;
-        leftTopY = table.position.y - props.height / 2;
-      } else if (table.type === 'textbox') {
-        const props = table.properties as TextBoxProps;
-        leftTopX = table.position.x - props.width / 2;
-        leftTopY = table.position.y - props.height / 2;
-      } else {
-        const props = table.properties as { radius: number };
-        leftTopX = table.position.x - props.radius;
-        leftTopY = table.position.y - props.radius;
-      }
-
-      return { table, leftTopX, leftTopY };
-    });
-
-    // Y座標が最小、次にX座標が最小のテーブルを選択
-    tablesWithTopLeft.sort((a, b) => {
-      if (Math.abs(a.leftTopY - b.leftTopY) < 1) {
-        return a.leftTopX - b.leftTopX;
-      }
-      return a.leftTopY - b.leftTopY;
-    });
-
-    return tablesWithTopLeft[0].table.id;
   };
 
   // ズーム・パンコントロールハンドラー
@@ -624,10 +585,6 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               const displayX = draggingPos ? draggingPos.x : (x * finalScale) + centerOffsetX + panX;
               const displayY = draggingPos ? draggingPos.y : (y * finalScale) + centerOffsetY + panY;
 
-              // 複数選択時の左上テーブル判定
-              const isLeadTable = selectedTableIds.length > 1 ?
-                getLeadTableId(tables, selectedTableIds) === table.id : true;
-
               // 境界制約の計算関数（左上角ベース）
               const constrainPosition = (leftTopX: number, leftTopY: number) => {
                 const bounds = boundaryArea || {
@@ -801,7 +758,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               };
 
               if (table.type === 'rectangle') {
-                const props = table.properties as { width: number; height: number; fillColor: string; strokeColor: string };
+                const props = table.properties as RectangleProps;
                 return (
                   <React.Fragment key={table.id}>
                     <Rect
@@ -809,6 +766,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       y={displayY - (props.height * finalScale) / 2}
                       width={props.width * finalScale}
                       height={props.height * finalScale}
+                      rotation={props.rotationAngle}
                       fill={props.fillColor}
                       stroke={props.strokeColor}
                       strokeWidth={1}
@@ -819,6 +777,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onContextMenu={(e) => handleTableRightClick(e, table.id)}
                       onDragMove={handleDragMove}
                       onDragEnd={handleDragEnd}
+                      onDblClick={() => onShapeDoubleClick?.(table.id)}
                     />
                     {isSelected && (
                       <Rect
@@ -826,6 +785,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                         y={displayY - (props.height * finalScale) / 2}
                         width={props.width * finalScale}
                         height={props.height * finalScale}
+                        rotation={props.rotationAngle}
                         fill="transparent"
                         stroke={isFirstSelected ? "#f44336" : "#ff9800"}
                         strokeWidth={2}
@@ -835,7 +795,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   </React.Fragment>
                 );
               } else if (table.type === 'circle') {
-                const props = table.properties as { radius: number; fillColor: string; strokeColor: string };
+                const props = table.properties as CircleProps;
                 return (
                   <React.Fragment key={table.id}>
                     <Circle
@@ -852,6 +812,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onContextMenu={(e) => handleTableRightClick(e, table.id)}
                       onDragMove={handleDragMove}
                       onDragEnd={handleDragEnd}
+                      onDblClick={() => onShapeDoubleClick?.(table.id)}
                     />
                     {isSelected && (
                       <Circle
@@ -867,7 +828,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   </React.Fragment>
                 );
               } else if (table.type === 'svg') {
-                const props = table.properties as any;
+                const props = table.properties as SVGTableProps;
                 const svgImage = svgTableImages[table.id];
 
                 if (!svgImage) {
