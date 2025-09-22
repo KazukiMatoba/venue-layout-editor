@@ -9,7 +9,7 @@ import TextBoxEditor from './components/TextBoxEditor'
 import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, circumscriptionSize } from './types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, circumscriptionSizeFull } from './types';
 import './App.css'
 
 function App() {
@@ -203,42 +203,20 @@ function App() {
     // 最初に選択されたテーブルを取得
     const primaryTable = tables.find(table => table.id == ids[0])!;
 
-    // 最初に選択されたテーブルの高さを取得
-    const primaryTableHeight = () => {
-      if (primaryTable.type === 'circle') {
-        const props = primaryTable.properties as { radius: number };
-        return props.radius * 2; // 直径
-      } else {
-        const props = primaryTable.properties as any;
-        const circumscription = circumscriptionSize(props);
-        return circumscription.height;
-      }
-      return 0;
-    }
     // 最初に選択されたテーブルの上辺の座標を取得
-    const primaryTopY = primaryTable.position.y - (primaryTableHeight() / 2);
+    const circumscription = circumscriptionSizeFull(primaryTable);
+    const primaryTopY = circumscription.corners.topLeft.y;
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-        // それぞれのテーブルの高さを取得
-        const tableHeight = () => {
-          if (table.type === 'circle') {
-            const props = table.properties as { radius: number };
-            return props.radius * 2; // 直径
-          } else {
-            const props = table.properties as any;
-            const circumscription = circumscriptionSize(props);
-            return circumscription.height;
-          }
-          return 0;
-        }
+        const tableCircumscription = circumscriptionSizeFull(table);
 
         // 新しい中心座標を設定
         return {
           ...table,
           position: {
             x: table.position.x,
-            y: primaryTopY + (tableHeight() / 2)
+            y: primaryTopY + (tableCircumscription.height / 2)
           }
         };
       }
@@ -278,41 +256,20 @@ function App() {
     // 最初に選択されたテーブルを取得
     const primaryTable = tables.find(table => table.id == ids[0])!;
 
-    // 最初に選択されたテーブルの高さを取得
-    const primaryTableHeight = () => {
-      if (primaryTable.type === 'circle') {
-        const props = primaryTable.properties as { radius: number };
-        return props.radius * 2; // 直径
-      } else {
-        const props = primaryTable.properties as any;
-        const circumscription = circumscriptionSize(props);
-        return circumscription.height;
-      }
-      return 0;
-    }
     // 最初に選択されたテーブルの下辺の座標を取得
-    const primaryBottomY = primaryTable.position.y + (primaryTableHeight() / 2);
+    const circumscription = circumscriptionSizeFull(primaryTable);
+    const primaryBottomY = circumscription.corners.bottomLeft.y;
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-        // それぞれのテーブルの高さを取得
-        const tableHeight = () => {
-          if (table.type === 'circle') {
-            const props = table.properties as { radius: number };
-            return props.radius * 2; // 直径
-          } else {
-            const props = table.properties as any;
-            const circumscription = circumscriptionSize(props);
-            return circumscription.height;
-          }
-          return 0;
-        }
+        const tableCircumscription = circumscriptionSizeFull(table);
 
+        // 新しい中心座標を設定
         return {
           ...table,
           position: {
             x: table.position.x,
-            y: primaryBottomY - (tableHeight() / 2)
+            y: primaryBottomY - (tableCircumscription.height / 2)
           }
         };
       }
@@ -328,41 +285,19 @@ function App() {
     // 最初に選択されたテーブルを取得
     const primaryTable = tables.find(table => table.id == ids[0])!;
 
-    // 最初に選択されたテーブルの幅を取得
-    const primaryTableWidth = () => {
-      if (primaryTable.type === 'circle') {
-        const props = primaryTable.properties as { radius: number };
-        return props.radius * 2; // 直径
-      } else {
-        const props = primaryTable.properties as any;
-        const circumscription = circumscriptionSize(props);
-        return circumscription.width;
-      }
-      return 0;
-    }
     // 最初に選択されたテーブルの左辺の座標を取得
-    const primaryLeftX = primaryTable.position.x - (primaryTableWidth() / 2);
+    const circumscription = circumscriptionSizeFull(primaryTable);
+    const primaryLeftX = circumscription.corners.topLeft.x;
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-        // それぞれのテーブルの幅を取得
-        const tableWidth = () => {
-          if (table.type === 'circle') {
-            const props = table.properties as { radius: number };
-            return props.radius * 2; // 直径
-          } else {
-            const props = table.properties as any;
-            const circumscription = circumscriptionSize(props);
-            return circumscription.width;
-          }
-          return 0;
-        }
+        const tableCircumscription = circumscriptionSizeFull(table);
 
         // 新しい中心座標を設定
         return {
           ...table,
           position: {
-            x: primaryLeftX + (tableWidth() / 2),
+            x: primaryLeftX + (tableCircumscription.width / 2),
             y: table.position.y
           }
         };
@@ -403,41 +338,19 @@ function App() {
     // 最初に選択されたテーブルを取得
     const primaryTable = tables.find(table => table.id == ids[0])!;
 
-    // 最初に選択されたテーブルの幅を取得
-    const primaryTableWidth = () => {
-      if (primaryTable.type === 'circle') {
-        const props = primaryTable.properties as { radius: number };
-        return props.radius * 2; // 直径
-      } else {
-        const props = primaryTable.properties as any;
-        const circumscription = circumscriptionSize(props);
-        return circumscription.width;
-      }
-      return 0;
-    }
     // 最初に選択されたテーブルの右辺の座標を取得
-    const primaryRightX = primaryTable.position.x + (primaryTableWidth() / 2);
+    const circumscription = circumscriptionSizeFull(primaryTable);
+    const primaryRightX = circumscription.corners.topRight.x;
 
     setTables(prev => prev.map(table => {
       if (ids.includes(table.id)) {
-        // それぞれのテーブルの幅を取得
-        const tableWidth = () => {
-          if (table.type === 'circle') {
-            const props = table.properties as { radius: number };
-            return props.radius * 2; // 直径
-          } else {
-            const props = table.properties as any;
-            const circumscription = circumscriptionSize(props);
-            return circumscription.width;
-          }
-          return 0;
-        }
+        const tableCircumscription = circumscriptionSizeFull(table);
 
         // 新しい中心座標を設定
         return {
           ...table,
           position: {
-            x: primaryRightX - (tableWidth() / 2),
+            x: primaryRightX - (tableCircumscription.width / 2),
             y: table.position.y
           }
         };

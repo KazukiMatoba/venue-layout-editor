@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Circle, Text, Image, Line } from 'react-konva';
 import ContextMenu from './ContextMenu';
 import ZoomPanControls from './ZoomPanControls';
 import TextBoxRenderer from './TextBoxRenderer';
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps, circumscriptionSize } from '../types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps, circumscriptionSizeFull } from '../types';
 
 interface EnhancedCanvasProps {
   svgData: SVGData;
@@ -577,16 +577,18 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               const isSelected = selectedTableIds.includes(table.id);
               // 最初に選択したものと2番目以降に選択したものの色を変えるため
               const isFirstSelected = selectedTableIds.indexOf(table.id) == 0 ? true : false;
+
               const x = table.position.x;
               const y = table.position.y;
+              const circumscription = circumscriptionSizeFull(table);
 
               // ドラッグ中の場合は実際のKonva要素の位置を使用、そうでなければ計算位置を使用
               const draggingPos = draggingPositions[table.id];
               const displayX = draggingPos ? draggingPos.x : (x * finalScale) + centerOffsetX + panX;
               const displayY = draggingPos ? draggingPos.y : (y * finalScale) + centerOffsetY + panY;
 
-              // 境界制約の計算関数（外接矩形ベース）
-              const constrainPosition = (leftTopX: number, leftTopY: number) => {
+              // 境界制約の計算関数（circumscriptionSizeFullを活用）
+              const constrainPosition = (centerX: number, centerY: number) => {
                 const bounds = boundaryArea || {
                   x: 0,
                   y: 0,
@@ -594,40 +596,25 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   height: svgData.height
                 };
 
-                let constrainedX = leftTopX;
-                let constrainedY = leftTopY;
+                // circumscriptionSizeFullから外接矩形の情報を取得
+                const circumscriptionInfo = circumscriptionSizeFull({
+                  ...table,
+                  position: { x: centerX, y: centerY }
+                });
 
-                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
-                  const props = table.properties as RectangleProps | SVGTableProps | TextBoxProps;
-                  const circumscription = circumscriptionSize(props);
+                // 外接矩形の左上角座標を計算
+                const leftTopX = centerX - circumscriptionInfo.width / 2;
+                const leftTopY = centerY - circumscriptionInfo.height / 2;
 
-                  // 外接矩形の左上角制約
-                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - circumscription.width, leftTopX));
-                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - circumscription.height, leftTopY));
-                } else if (table.type === 'circle') {
-                  const props = table.properties as { radius: number };
-                  const diameter = props.radius * 2;
+                // 境界制約を適用
+                const constrainedLeftTopX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - circumscriptionInfo.width, leftTopX));
+                const constrainedLeftTopY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - circumscriptionInfo.height, leftTopY));
 
-                  // 円の場合は直径分を考慮
-                  constrainedX = Math.max(bounds.x, Math.min(bounds.x + bounds.width - diameter, leftTopX));
-                  constrainedY = Math.max(bounds.y, Math.min(bounds.y + bounds.height - diameter, leftTopY));
-                }
-
-                // 左上角から中心位置に変換して返す（既存のposition管理との互換性のため）
-                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
-                  const props = table.properties as RectangleProps | SVGTableProps | TextBoxProps;
-                  const circumscription = circumscriptionSize(props);
-                  return {
-                    x: constrainedX + circumscription.width / 2,
-                    y: constrainedY + circumscription.height / 2
-                  };
-                } else {
-                  const props = table.properties as { radius: number };
-                  return {
-                    x: constrainedX + props.radius,
-                    y: constrainedY + props.radius
-                  };
-                }
+                // 制約された左上角から中心位置を計算して返す
+                return {
+                  x: constrainedLeftTopX + circumscriptionInfo.width / 2,
+                  y: constrainedLeftTopY + circumscriptionInfo.height / 2
+                };
               };
 
               const handleDragMove = (e: any) => {
@@ -642,24 +629,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 let snappedCenterX = snapEnabled ? snapToGrid(centerX, true) : centerX;
                 let snappedCenterY = snapEnabled ? snapToGrid(centerY, false) : centerY;
 
-                // 境界制約のために外接矩形の左上角座標を計算
-                let leftTopX: number;
-                let leftTopY: number;
-
-                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
-                  const props = table.properties as RectangleProps | SVGTableProps | TextBoxProps;
-                  const circumscription = circumscriptionSize(props);
-                  leftTopX = snappedCenterX - circumscription.width / 2;
-                  leftTopY = snappedCenterY - circumscription.height / 2;
-                } else {
-                  // 円形の場合：中心から左上角相当の位置を計算
-                  const props = table.properties as { radius: number };
-                  leftTopX = snappedCenterX - props.radius;
-                  leftTopY = snappedCenterY - props.radius;
-                }
-
-                // 境界制約を適用（外接矩形ベース）
-                const constrained = constrainPosition(leftTopX, leftTopY);
+                // 境界制約を適用（中心座標ベース）
+                const constrained = constrainPosition(snappedCenterX, snappedCenterY);
 
                 // 制約された中心座標を表示位置に設定
                 e.target.x(constrained.x * finalScale + centerOffsetX + panX);
@@ -681,24 +652,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 let snappedCenterX = snapEnabled ? snapToGrid(centerX, true) : centerX;
                 let snappedCenterY = snapEnabled ? snapToGrid(centerY, false) : centerY;
 
-                // 境界制約のために外接矩形の左上角座標を計算
-                let leftTopX: number;
-                let leftTopY: number;
-
-                if (table.type === 'rectangle' || table.type === 'svg' || table.type === 'textbox') {
-                  const props = table.properties as RectangleProps | SVGTableProps | TextBoxProps;
-                  const circumscription = circumscriptionSize(props);
-                  leftTopX = snappedCenterX - circumscription.width / 2;
-                  leftTopY = snappedCenterY - circumscription.height / 2;
-                } else {
-                  // 円形の場合：中心から左上角相当の位置を計算
-                  const props = table.properties as { radius: number };
-                  leftTopX = snappedCenterX - props.radius;
-                  leftTopY = snappedCenterY - props.radius;
-                }
-
-                // 境界制約を適用（外接矩形ベース）
-                const constrained = constrainPosition(leftTopX, leftTopY);
+                // 境界制約を適用（中心座標ベース）
+                const constrained = constrainPosition(snappedCenterX, snappedCenterY);
 
                 // App.tsxのhandleMultipleTableMoveに処理を委譲
                 // 複数選択の場合の相対移動処理はApp.tsx側で実行される
@@ -714,7 +669,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
               if (table.type === 'rectangle') {
                 const props = table.properties as RectangleProps;
-                const circumscription = circumscriptionSize(props);
+                const circumscription = circumscriptionSizeFull(table);
 
                 return (
                   <React.Fragment key={table.id}>
@@ -790,6 +745,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               } else if (table.type === 'svg') {
                 const props = table.properties as SVGTableProps;
                 const svgImage = svgTableImages[table.id];
+                const circumscription = circumscriptionSizeFull(table);
 
                 if (!svgImage) {
                   // SVG画像が読み込まれていない場合は仮の矩形を表示
@@ -812,7 +768,6 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   );
                 }
 
-                const circumscription = circumscriptionSize(props);
                 return (
                   <React.Fragment key={table.id}>
                     <Image
@@ -850,14 +805,13 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                   </React.Fragment>
                 );
               } else if (table.type === 'textbox') {
-                const props = table.properties as TextBoxProps;
                 return (
                   <TextBoxRenderer
                     key={table.id}
                     id={table.id}
                     x={displayX}
                     y={displayY}
-                    properties={props}
+                    tableObj={table}
                     scale={finalScale}
                     isSelected={isSelected}
                     isFirstSelected={isFirstSelected}

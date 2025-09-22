@@ -1,13 +1,13 @@
 import React from 'react';
 import { Rect, Text, Group } from 'react-konva';
-import type { TextBoxProps } from '../types';
-import { circumscriptionSize } from '../types';
+import type { TextBoxProps, TableObject } from '../types';
+import { circumscriptionSizeFull } from '../types';
 
 interface TextBoxRendererProps {
   id: string;
   x: number;
   y: number;
-  properties: TextBoxProps;
+  tableObj: TableObject;
   scale: number;
   isSelected: boolean;
   isFirstSelected: boolean;
@@ -24,7 +24,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
   id,
   x,
   y,
-  properties,
+  tableObj,
   scale,
   isSelected,
   isFirstSelected,
@@ -44,7 +44,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
     height,
     textColor,
     rotationAngle
-  } = properties;
+  } = tableObj.properties as TextBoxProps;
 
   // デフォルト値
   const backgroundColor = 'transparent';
@@ -113,7 +113,7 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
       
       {/* 選択状態の枠線 */}
       {isSelected && (() => {
-        const circumscription = circumscriptionSize(properties);
+        const circumscription = circumscriptionSizeFull(tableObj);
         const scaledCircumscriptionWidth = circumscription.width * scale;
         const scaledCircumscriptionHeight = circumscription.height * scale;
         

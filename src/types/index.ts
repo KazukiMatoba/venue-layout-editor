@@ -37,18 +37,6 @@ export interface RectangleProps {
   rotationAngle: number; //回転角度
 }
 
-
-// 回転した矩形に外接する矩形のサイズを計算する関数
-export function circumscriptionSize(props: RectangleProps | SVGTableProps | TextBoxProps): { width: number; height: number } {
-  const theta = props.rotationAngle * Math.PI / 180;
-  const width = Math.abs(props.width * Math.cos(theta)) + Math.abs(props.height * Math.sin(theta));
-  const height = Math.abs(props.width * Math.sin(theta)) + Math.abs(props.height * Math.cos(theta));
-  return {
-    width,
-    height
-  };
-}
-
 export interface CircleProps {
   radius: number;  // mm単位
   fillColor: string; // 塗潰色
@@ -218,3 +206,60 @@ export interface LoadResult {
   error?: string;
   warnings?: string[];
 }
+
+// 外接図形の四隅の座標を表す型定義
+export interface CircumscriptionCorners {
+  topLeft: Position;
+  topRight: Position;
+  bottomLeft: Position;
+  bottomRight: Position;
+}
+
+// 外接図形のサイズと四隅の座標を取得する関数
+export function circumscriptionSizeFull(tableObj: TableObject): {
+  width: number;
+  height: number;
+  corners: CircumscriptionCorners;
+} {
+  const centerX = tableObj.position.x;
+  const centerY = tableObj.position.y;
+
+  if (tableObj.type === "circle") {
+    const props = tableObj.properties as CircleProps;
+    const diameter = props.radius * 2;
+
+    return {
+      width: diameter,
+      height: diameter,
+      corners: {
+        topLeft: { x: centerX - props.radius, y: centerY - props.radius },
+        topRight: { x: centerX + props.radius, y: centerY - props.radius },
+        bottomLeft: { x: centerX - props.radius, y: centerY + props.radius },
+        bottomRight: { x: centerX + props.radius, y: centerY + props.radius },
+      }
+    };
+  } else {
+    const props = tableObj.properties as RectangleProps | SVGTableProps | TextBoxProps;
+    const theta = props.rotationAngle * Math.PI / 180;
+
+    // 外接矩形のサイズ計算
+    const circumscriptionWidth = Math.abs(props.width * Math.cos(theta)) + Math.abs(props.height * Math.sin(theta));
+    const circumscriptionHeight = Math.abs(props.width * Math.sin(theta)) + Math.abs(props.height * Math.cos(theta));
+
+    // 外接矩形の四隅の座標（中心を基準とした相対座標から絶対座標に変換）
+    const halfWidth = circumscriptionWidth / 2;
+    const halfHeight = circumscriptionHeight / 2;
+
+    return {
+      width: circumscriptionWidth,
+      height: circumscriptionHeight,
+      corners: {
+        topLeft: { x: centerX - halfWidth, y: centerY - halfHeight },
+        topRight: { x: centerX + halfWidth, y: centerY - halfHeight },
+        bottomLeft: { x: centerX - halfWidth, y: centerY + halfHeight },
+        bottomRight: { x: centerX + halfWidth, y: centerY + halfHeight },
+      }
+    };
+  }
+}
+
