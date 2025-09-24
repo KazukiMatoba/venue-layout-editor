@@ -3,7 +3,7 @@ import { Stage, Layer, Rect, Circle, Text, Image, Line } from 'react-konva';
 import ContextMenu from './ContextMenu';
 import ZoomPanControls from './ZoomPanControls';
 import TextBoxRenderer from './TextBoxRenderer';
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps, circumscriptionSizeFull } from '../types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps, type DistanceType, circumscriptionSizeFull } from '../types';
 
 interface EnhancedCanvasProps {
   svgData: SVGData;
@@ -27,6 +27,7 @@ interface EnhancedCanvasProps {
   onAlignLeft?: (ids: string[]) => void;
   onHorizontallyCentered?: (ids: string[]) => void;
   onAlignRight?: (ids: string[]) => void;
+  onMeasureDistance?: (ids: string[], distanceType: DistanceType) => void;
   onTextBoxDoubleClick?: (id: string) => void;
   onShapeDoubleClick?: (id: string) => void;
   lastSaveTime?: Date | null;
@@ -54,6 +55,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onAlignLeft,
   onHorizontallyCentered,
   onAlignRight,
+  onMeasureDistance,
   onTextBoxDoubleClick,
   onShapeDoubleClick,
   lastSaveTime,
@@ -434,6 +436,18 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     onAlignRight?.(selectedTableIds);
   }
 
+  const handleMeasureHorizontalDistance = () => {
+    onMeasureDistance?.(selectedTableIds, 'horizontal');
+  }
+
+  const handleMeasureVerticalDistance = () => {
+    onMeasureDistance?.(selectedTableIds, 'vertical');
+  }
+
+  const handleMeasureShortestDistance = () => {
+    onMeasureDistance?.(selectedTableIds, 'shortest');
+  }
+
   // グリッド線の生成
   const generateGridLines = () => {
     if (!gridVisible) return [];
@@ -691,7 +705,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onContextMenu={(e) => handleTableRightClick(e, table.id)}
                       onDragMove={handleDragMove}
                       onDragEnd={handleDragEnd}
-                      onDblClick={() => onShapeDoubleClick?.(table.id)}
+                      onDblClick={(e) => {
+                        if (e.evt.button === 0) {
+                          onShapeDoubleClick?.(table.id)}
+                        }
+                      }
                     />
                     {isSelected && (
                       <Rect
@@ -727,7 +745,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onContextMenu={(e) => handleTableRightClick(e, table.id)}
                       onDragMove={handleDragMove}
                       onDragEnd={handleDragEnd}
-                      onDblClick={() => onShapeDoubleClick?.(table.id)}
+                      onDblClick={(e) => {
+                        if (e.evt.button === 0) {
+                          onShapeDoubleClick?.(table.id)}
+                        }
+                      }
                     />
                     {isSelected && (
                       <Circle
@@ -786,7 +808,11 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onContextMenu={(e) => handleTableRightClick(e, table.id)}
                       onDragMove={handleDragMove}
                       onDragEnd={handleDragEnd}
-                      onDblClick={() => onShapeDoubleClick?.(table.id)}
+                      onDblClick={(e) => {
+                        if (e.evt.button === 0) {
+                          onShapeDoubleClick?.(table.id)}
+                        }
+                      }
                     />
                     {isSelected && (
                       <Rect
@@ -847,6 +873,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             onAlignLeft={handleAlignLeft}
             onHorizontallyCentered={handleHorizontallyCentered}
             onAlignRight={handleAlignRight}
+            onMeasureHorizontalDistance={handleMeasureHorizontalDistance}
+            onMeasureVerticalDistance={handleMeasureVerticalDistance}
+            onMeasureShortestDistance={handleMeasureShortestDistance}
           />
         )}
       </div>

@@ -16,6 +16,9 @@ interface ContextMenuProps {
   onAlignLeft?: () => void;
   onHorizontallyCentered?: () => void;
   onAlignRight?: () => void;
+  onMeasureHorizontalDistance?: () => void;
+  onMeasureVerticalDistance?: () => void;
+  onMeasureShortestDistance?: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -33,7 +36,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   onAlignBottom,
   onAlignLeft,
   onHorizontallyCentered,
-  onAlignRight
+  onAlignRight,
+  onMeasureHorizontalDistance,
+  onMeasureVerticalDistance,
+  onMeasureShortestDistance
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -109,6 +115,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     onClose();
   }
 
+  const handleMeasureHorizontalDistance = () => {
+    onMeasureHorizontalDistance?.();
+    onClose();
+  }
+
+  const handelMeasureVerticalDistance = () => {
+    onMeasureVerticalDistance?.();
+    onClose();
+  }
+
+  const handleMeasureShortestDistance = () => {
+    onMeasureShortestDistance?.();
+    onClose();
+  }
+
   // 複数選択されているかどうかを判定
   const isMultipleSelected = selectedTableIds.length > 1;
 
@@ -129,7 +150,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
         padding: '4px 0'
       }}
     >
-      {isMultipleSelected ? (
+      {selectedTableIds.length > 1 ? (
         // 複数選択時のメニュー
         <>
           <div
@@ -275,6 +296,82 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
               margin: '4px 0'
             }}
           />
+
+          {selectedTableIds.length == 2 && (
+            <>
+              <div
+                className="context-menu-item"
+                onClick={handleMeasureHorizontalDistance}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                📏 2つの水平距離を測定
+              </div>
+
+              <div
+                className="context-menu-item"
+                onClick={handelMeasureVerticalDistance}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                📏 2つの垂直距離を測定
+              </div>
+
+              <div
+                className="context-menu-item"
+                onClick={handleMeasureShortestDistance}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                📏 2つの最短距離を測定
+              </div>
+
+              <div
+                className="context-menu-divider"
+                style={{
+                  height: '1px',
+                  backgroundColor: '#eee',
+                  margin: '4px 0'
+                }}
+              />
+            </>
+          )}
 
           <div
             className="context-menu-item"

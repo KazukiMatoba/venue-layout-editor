@@ -523,7 +523,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
         追加
       </button>
 
-      {selectedTable && (
+      {/*selectedTable && (
         <div className="selected-table-info" style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
           <h4>選択中のテーブル</h4>
           <div style={{ fontSize: '0.9rem', color: '#666' }}>
@@ -547,7 +547,7 @@ const TableToolbar: React.FC<TableToolbarProps> = ({
             )}
           </div>
         </div>
-      )}
+      )*/}
     </div>
   );
 };

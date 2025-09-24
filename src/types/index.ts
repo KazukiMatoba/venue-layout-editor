@@ -177,6 +177,7 @@ export interface BoundaryArea {
 // テーブルタイプとプロパティの型定義
 export type TableType = 'rectangle' | 'circle' | 'svg' | 'textbox';
 export type TableProps = RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
+export type DistanceType = 'horizontal' | 'vertical' | 'shortest';
 
 // プロジェクトデータの型定義
 export interface ProjectInfo {

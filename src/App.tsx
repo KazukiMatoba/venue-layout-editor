@@ -8,8 +8,9 @@ import ErrorDisplay from './components/ErrorDisplay'
 import TextBoxEditor from './components/TextBoxEditor'
 import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
+import MeasurementDialog from './components/MeasurementDialog'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, circumscriptionSizeFull } from './types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, type DistanceType, circumscriptionSizeFull } from './types';
 import './App.css'
 
 function App() {
@@ -29,6 +30,15 @@ function App() {
 
   // 図形編集用の状態
   const [editingShapeId, setEditingShapeId] = useState<string | null>(null)
+
+  // 測定結果ダイアログの状態
+  const [measurementDialog, setMeasurementDialog] = useState<{
+    isOpen: boolean;
+    distanceType: DistanceType;
+    horizontalDistance: number;
+    verticalDistance: number;
+    shortestDistance: number;
+  } | null>(null);
 
   // プロジェクト管理用の状態
   const [currentProjectName, setCurrentProjectName] = useState<string>('')
@@ -359,6 +369,46 @@ function App() {
     }));
   }
 
+  const handleMeasureDistance = (ids: string[], distanceType: DistanceType) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+    if (selectedTables.length > 2) return
+
+    // 選択された２つのテーブルを取得
+    const firstTable = tables.find(table => table.id == ids[0])!;
+    const firstCircumscription = circumscriptionSizeFull(firstTable);
+
+    const secondTable = tables.find(table => table.id == ids[1])!;
+    const secondCircumscription = circumscriptionSizeFull(secondTable);
+
+    // 水平方向の距離
+    const horizontalDistance = Math.max(
+      Math.max(
+        firstCircumscription.corners.topLeft.x - secondCircumscription.corners.bottomRight.x,
+        secondCircumscription.corners.topLeft.x - firstCircumscription.corners.bottomRight.x
+      )
+    );
+
+    // 垂直方向の距離
+    const verticalDistance = Math.max(
+      Math.max(
+        firstCircumscription.corners.topLeft.y - secondCircumscription.corners.bottomRight.y,
+        secondCircumscription.corners.topLeft.y - firstCircumscription.corners.bottomRight.y
+      )
+    );
+
+    // 最短距離
+    const shortestDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(verticalDistance, 2));
+
+    setMeasurementDialog({
+      isOpen: true,
+      distanceType: distanceType,
+      horizontalDistance: Math.round(horizontalDistance),
+      verticalDistance: Math.round(verticalDistance),
+      shortestDistance: Math.round(shortestDistance)
+    });
+  }
+
   // テキストボックス編集ハンドラー
   const handleTextBoxDoubleClick = (id: string) => {
     setEditingTextBoxId(id);
@@ -512,6 +562,7 @@ function App() {
                 onAlignLeft={handleAlignLeft}
                 onHorizontallyCentered={handleHorizontallyCentered}
                 onAlignRight={handleAlignRight}
+                onMeasureDistance={handleMeasureDistance}
                 onTextBoxDoubleClick={handleTextBoxDoubleClick}
                 onShapeDoubleClick={handleShapeDoubleClick}
                 lastSaveTime={lastSaveTime}
@@ -544,6 +595,18 @@ function App() {
             properties={editingShape.properties as any}
             onSave={handleShapeSave}
             onCancel={handleShapeEditCancel}
+          />
+        )}
+
+        {/* 距離測定結果ダイアログ */}
+        {measurementDialog && (
+          <MeasurementDialog
+            isOpen={measurementDialog.isOpen}
+            distanceType={measurementDialog.distanceType}
+            horizontalDistance= {measurementDialog.horizontalDistance}
+            verticalDistance= {measurementDialog.verticalDistance}
+            shortestDistance= {measurementDialog.shortestDistance}
+            onClose={() => setMeasurementDialog(null)}
           />
         )}
       </div>
