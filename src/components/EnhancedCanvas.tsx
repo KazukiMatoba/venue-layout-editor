@@ -719,9 +719,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                         height={circumscription.height * finalScale}
                         offsetX={(circumscription.width * finalScale) / 2}
                         offsetY={(circumscription.height * finalScale) / 2}
-                        fill="transparent"
-                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
-                        strokeWidth={2}
+                        fill="rgba(255, 0, 255, 0.1)"
+                        stroke={isFirstSelected ? "rgba(0, 255, 255, 1)" : "rgba(0, 255, 0, 1)"}
+                        strokeWidth={1}
                         listening={false}
                       />
                     )}
@@ -729,6 +729,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                 );
               } else if (table.type === 'circle') {
                 const props = table.properties as CircleProps;
+                const circumscription = circumscriptionSizeFull(table);
+                
                 return (
                   <React.Fragment key={table.id}>
                     <Circle
@@ -752,13 +754,16 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       }
                     />
                     {isSelected && (
-                      <Circle
+                      <Rect
                         x={displayX}
                         y={displayY}
-                        radius={props.radius * finalScale}
-                        fill="transparent"
-                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
-                        strokeWidth={2}
+                        width={circumscription.width * finalScale}
+                        height={circumscription.height * finalScale}
+                        offsetX={(circumscription.width * finalScale) / 2}
+                        offsetY={(circumscription.height * finalScale) / 2}
+                        fill="rgba(255, 0, 255, 0.1)"
+                        stroke={isFirstSelected ? "rgba(0, 255, 255, 1)" : "rgba(0, 255, 0, 1)"}
+                        strokeWidth={1}
                         listening={false}
                       />
                     )}
@@ -822,9 +827,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                         height={circumscription.height * finalScale}
                         offsetX={(circumscription.width * finalScale) / 2}
                         offsetY={(circumscription.height * finalScale) / 2}
-                        fill="transparent"
-                        stroke={isFirstSelected ? "#f44336" : "#ff9800"}
-                        strokeWidth={2}
+                        fill="rgba(255, 0, 255, 0.1)"
+                        stroke={isFirstSelected ? "rgba(0, 255, 255, 1)" : "rgba(0, 255, 0, 1)"}
+                        strokeWidth={1}
                         listening={false}
                       />
                     )}

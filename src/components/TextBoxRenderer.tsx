@@ -125,9 +125,9 @@ const TextBoxRenderer: React.FC<TextBoxRendererProps> = ({
             height={scaledCircumscriptionHeight}
             offsetX={scaledCircumscriptionWidth / 2}
             offsetY={scaledCircumscriptionHeight / 2}
-            fill="transparent"
-            stroke={isFirstSelected ? "#f44336" : "#ff9800"}
-            strokeWidth={2}
+            fill="rgba(255, 0, 255, 0.1)"
+            stroke={isFirstSelected ? "rgba(0, 255, 255, 1)" : "rgba(0, 255, 0, 1)"}
+            strokeWidth={1}
             listening={false}
           />
         );
