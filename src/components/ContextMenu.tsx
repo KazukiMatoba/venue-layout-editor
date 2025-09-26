@@ -7,6 +7,7 @@ interface ContextMenuProps {
   onDelete: () => void;
   onDuplicate: () => void;
   tableId: string;
+  selectedTableType: string;
   selectedTableIds?: string[];
   onDeleteMultiple?: () => void;
   onDuplicateMultiple?: () => void;
@@ -16,9 +17,7 @@ interface ContextMenuProps {
   onAlignLeft?: () => void;
   onHorizontallyCentered?: () => void;
   onAlignRight?: () => void;
-  onMeasureHorizontalDistance?: () => void;
-  onMeasureVerticalDistance?: () => void;
-  onMeasureShortestDistance?: () => void;
+  onMeasureDistance?: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -28,6 +27,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   onDelete,
   onDuplicate,
   tableId,
+  selectedTableType,
   selectedTableIds = [],
   onDeleteMultiple,
   onDuplicateMultiple,
@@ -37,9 +37,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   onAlignLeft,
   onHorizontallyCentered,
   onAlignRight,
-  onMeasureHorizontalDistance,
-  onMeasureVerticalDistance,
-  onMeasureShortestDistance
+  onMeasureDistance,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -115,18 +113,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     onClose();
   }
 
-  const handleMeasureHorizontalDistance = () => {
-    onMeasureHorizontalDistance?.();
-    onClose();
-  }
-
-  const handelMeasureVerticalDistance = () => {
-    onMeasureVerticalDistance?.();
-    onClose();
-  }
-
-  const handleMeasureShortestDistance = () => {
-    onMeasureShortestDistance?.();
+  const handleMeasureDistance = () => {
+    onMeasureDistance?.();
     onClose();
   }
 
@@ -301,7 +289,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
             <>
               <div
                 className="context-menu-item"
-                onClick={handleMeasureHorizontalDistance}
+                onClick={handleMeasureDistance}
                 style={{
                   padding: '8px 16px',
                   cursor: 'pointer',
@@ -317,49 +305,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                   e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
-                📏 2つの水平距離を測定
-              </div>
-
-              <div
-                className="context-menu-item"
-                onClick={handelMeasureVerticalDistance}
-                style={{
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f0f0f0';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                📏 2つの垂直距離を測定
-              </div>
-
-              <div
-                className="context-menu-item"
-                onClick={handleMeasureShortestDistance}
-                style={{
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#f0f0f0';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                📏 2つの最短距離を測定
+                📏 2つの距離を測定
               </div>
 
               <div
@@ -419,35 +365,39 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       ) : (
         // 単一選択時のメニュー
         <>
-          <div
-            className="context-menu-item"
-            onClick={handleDuplicate}
-            style={{
-              padding: '8px 16px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#f0f0f0';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            📋 オブジェクトを複製
-          </div>
-          
-          <div
-            className="context-menu-divider"
-            style={{
-              height: '1px',
-              backgroundColor: '#eee',
-              margin: '4px 0'
-            }}
-          />
+          { selectedTableType !== 'scale' ? (
+            <>
+              <div
+                className="context-menu-item"
+                onClick={handleDuplicate}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                📋 オブジェクトを複製
+              </div>
+
+              <div
+                className="context-menu-divider"
+                style={{
+                  height: '1px',
+                  backgroundColor: '#eee',
+                  margin: '4px 0'
+                }}
+              />
+            </>
+          ) : ""}
           
           <div
             className="context-menu-item"

@@ -1,23 +1,27 @@
-import React, {useRef, useEffect} from 'react';
+import React, { useRef, useEffect } from 'react';
 
-import { type DistanceType } from '../types';
+import { type DistanceType, type TableObject } from '../types';
 
 interface MeasurementDialogProps {
     isOpen: boolean;
-    distanceType: DistanceType;
     horizontalDistance: number;
     verticalDistance: number;
-    shortestDistance: number;
+    digonalDistance: number;
     onClose: () => void;
+    onCreateScale: (firstTableId: string, secondTableId: string) => void;
+    firstTableId: string;
+    secondTableId: string;
 }
 
 const MeasurementDialog: React.FC<MeasurementDialogProps> = ({
     isOpen,
-    distanceType,
     horizontalDistance,
     verticalDistance,
-    shortestDistance,
-    onClose
+    digonalDistance,
+    onClose,
+    onCreateScale,
+    firstTableId,
+    secondTableId
 }) => {
     // フォーカス管理用のref
     const modalRef = useRef<HTMLDivElement>(null);
@@ -34,6 +38,12 @@ const MeasurementDialog: React.FC<MeasurementDialogProps> = ({
         if (e.key === 'Escape') {
             onClose();
         }
+    };
+
+    // 直線作成ボタンのクリックハンドラー
+    const handleCreateScale = () => {
+        onCreateScale(firstTableId, secondTableId);
+        onClose();
     };
 
     if (!isOpen) return null;
@@ -70,45 +80,50 @@ const MeasurementDialog: React.FC<MeasurementDialogProps> = ({
             >
                 <h3 style={{ margin: 0 }}>距離測定結果</h3>
                 <div style={{ marginBottom: '1.5rem' }}>
-                    {distanceType === 'horizontal' ? (
-                        <>
-                            {horizontalDistance >= 0 ? (
-                                <div>
-                                    <span>{horizontalDistance.toLocaleString()}</span>
-                                    <span>mm</span>
-                                </div>
-                            ) : (
-                                <p>水平方向で重なっています</p>
-                            )}
-                        </>
-                    ) : distanceType === 'vertical' ? (
-                        <>
-                            {verticalDistance >= 0 ? (
-                                <div>
-                                    <span>{verticalDistance.toLocaleString()}</span>
-                                    <span>mm</span>
-                                </div>
-                            ) : (
-                                <p>※ 垂直方向で重なっています</p>
-                            )}
-                        </>
-                    ) : distanceType === 'shortest' ? (
-                        <>
-                            {horizontalDistance >= 0 || verticalDistance >= 0 ? (
-                                <div>
-                                    <span>{shortestDistance.toLocaleString()}</span>
-                                    <span>mm</span>
-                                </div>
-                            ) : (
-                                <p>※ 重なっています</p>
-                            )}
-                        </>
-                    ) : (
-                        <></>
-                    )}
+                    <div>
+                        <span>水平距離：</span>
+                        {horizontalDistance > 0 ? (
+                            <span>{horizontalDistance.toLocaleString()}mm</span>
+                        ) : horizontalDistance == 0 ? (
+                            <span>水平方向は接しています</span>
+                        ) : (
+                            <span>水平方向で重なっています</span>
+                        )}
+                    </div>
+
+                    <div>
+                        <span>垂直距離：</span>
+                        {verticalDistance > 0 ? (
+                            <span>{verticalDistance.toLocaleString()}mm</span>
+                        ) : verticalDistance == 0 ? (
+                            <span>垂直方向は接しています</span>
+                        ) : (
+                            <span>垂直方向で重なっています</span>
+                        )}
+                    </div>
+
+                    <div>
+                        <span>直線距離：</span>
+                        {horizontalDistance >0 ? (
+                            <span>{Math.min(digonalDistance, horizontalDistance).toLocaleString()}mm</span>
+                        ) : verticalDistance > 0 ? (
+                            <span>{Math.min(digonalDistance, verticalDistance).toLocaleString()}mm</span>
+                        ) : horizontalDistance == 0 && verticalDistance == 0 ? (
+                            <span>接しています</span>
+                        ) : (
+                            <span>重なっています</span>
+                        )}
+                    </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                    <button
+                        onClick={handleCreateScale}
+                        className='btn-action btn-mr'
+                    >
+                        寸法線を作成
+                    </button>
+
                     <button
                         onClick={onClose}
                         className='btn-action'

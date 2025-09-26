@@ -63,6 +63,11 @@ export interface TextBoxProps {
   rotationAngle: number; //回転角度
 }
 
+export interface ScaleProps {
+  firstTableId: string;
+  secondTableId: string;
+}
+
 export interface TableStyle {
   fill: string;
   stroke: string;
@@ -76,9 +81,9 @@ export interface TableStyle {
 
 export interface TableObject {
   id: string;
-  type: 'rectangle' | 'circle' | 'svg' | 'textbox';
+  type: 'rectangle' | 'circle' | 'svg' | 'textbox' | 'scale';
   position: Position;
-  properties: RectangleProps | CircleProps | SVGTableProps | TextBoxProps;
+  properties: RectangleProps | CircleProps | SVGTableProps | TextBoxProps | ScaleProps;
 }
 
 // エラー情報の型定義

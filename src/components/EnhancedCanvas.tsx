@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Rect, Circle, Text, Image, Line } from 'react-konva';
+import { Stage, Layer, Rect, Circle, Image, Line } from 'react-konva';
 import ContextMenu from './ContextMenu';
 import ZoomPanControls from './ZoomPanControls';
 import TextBoxRenderer from './TextBoxRenderer';
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type CircleProps, type RectangleProps, type SVGTableProps, type DistanceType, circumscriptionSizeFull } from '../types';
+import ScaleRenderer from './ScaleRenderer';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type CircleProps, type RectangleProps, type SVGTableProps, type DistanceType, circumscriptionSizeFull } from '../types';
 
 interface EnhancedCanvasProps {
   svgData: SVGData;
@@ -27,11 +28,12 @@ interface EnhancedCanvasProps {
   onAlignLeft?: (ids: string[]) => void;
   onHorizontallyCentered?: (ids: string[]) => void;
   onAlignRight?: (ids: string[]) => void;
-  onMeasureDistance?: (ids: string[], distanceType: DistanceType) => void;
+  onMeasureDistance?: (ids: string[]) => void;
   onTextBoxDoubleClick?: (id: string) => void;
   onShapeDoubleClick?: (id: string) => void;
   lastSaveTime?: Date | null;
 }
+
 
 const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   svgData,
@@ -159,6 +161,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     x: number;
     y: number;
     tableId: string;
+    selectedTableType: string;
   } | null>(null);
 
   // ドラッグ中のテーブル位置を管理
@@ -387,10 +390,13 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     absoluteX = Math.max(10, absoluteX);
     absoluteY = Math.max(10, absoluteY);
 
+    const selectedTable = tables.find(table => table.id == tableId)!;
+
     setContextMenu({
       x: absoluteX,
       y: absoluteY,
-      tableId
+      tableId,
+      selectedTableType: selectedTable.type
     });
   };
 
@@ -436,16 +442,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
     onAlignRight?.(selectedTableIds);
   }
 
-  const handleMeasureHorizontalDistance = () => {
-    onMeasureDistance?.(selectedTableIds, 'horizontal');
-  }
-
-  const handleMeasureVerticalDistance = () => {
-    onMeasureDistance?.(selectedTableIds, 'vertical');
-  }
-
-  const handleMeasureShortestDistance = () => {
-    onMeasureDistance?.(selectedTableIds, 'shortest');
+  const handleMeasureDistance = () => {
+    onMeasureDistance?.(selectedTableIds);
   }
 
   // グリッド線の生成
@@ -594,7 +592,6 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
 
               const x = table.position.x;
               const y = table.position.y;
-              const circumscription = circumscriptionSizeFull(table);
 
               // ドラッグ中の場合は実際のKonva要素の位置を使用、そうでなければ計算位置を使用
               const draggingPos = draggingPositions[table.id];
@@ -707,8 +704,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onDragEnd={handleDragEnd}
                       onDblClick={(e) => {
                         if (e.evt.button === 0) {
-                          onShapeDoubleClick?.(table.id)}
+                          onShapeDoubleClick?.(table.id)
                         }
+                      }
                       }
                     />
                     {isSelected && (
@@ -730,7 +728,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
               } else if (table.type === 'circle') {
                 const props = table.properties as CircleProps;
                 const circumscription = circumscriptionSizeFull(table);
-                
+
                 return (
                   <React.Fragment key={table.id}>
                     <Circle
@@ -749,8 +747,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onDragEnd={handleDragEnd}
                       onDblClick={(e) => {
                         if (e.evt.button === 0) {
-                          onShapeDoubleClick?.(table.id)}
+                          onShapeDoubleClick?.(table.id)
                         }
+                      }
                       }
                     />
                     {isSelected && (
@@ -815,8 +814,9 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                       onDragEnd={handleDragEnd}
                       onDblClick={(e) => {
                         if (e.evt.button === 0) {
-                          onShapeDoubleClick?.(table.id)}
+                          onShapeDoubleClick?.(table.id)
                         }
+                      }
                       }
                     />
                     {isSelected && (
@@ -855,6 +855,20 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
                     onDoubleClick={onTextBoxDoubleClick}
                   />
                 );
+              } else if (table.type === 'scale') {
+                return (
+                  <ScaleRenderer
+                    key={table.id}
+                    table={table}
+                    finalScale={finalScale}
+                    centerOffsetX={centerOffsetX}
+                    centerOffsetY={centerOffsetY}
+                    panX={panX}
+                    panY={panY}
+                    allTables={tables}
+                    onContextMenu={(e) => handleTableRightClick(e, table.id)}
+                  />
+                );
               }
             })}
           </Layer>
@@ -866,6 +880,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             x={contextMenu.x}
             y={contextMenu.y}
             tableId={contextMenu.tableId}
+            selectedTableType={contextMenu.selectedTableType}
             selectedTableIds={selectedTableIds}
             onClose={handleContextMenuClose}
             onDelete={() => handleTableDelete(contextMenu.tableId)}
@@ -878,9 +893,7 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             onAlignLeft={handleAlignLeft}
             onHorizontallyCentered={handleHorizontallyCentered}
             onAlignRight={handleAlignRight}
-            onMeasureHorizontalDistance={handleMeasureHorizontalDistance}
-            onMeasureVerticalDistance={handleMeasureVerticalDistance}
-            onMeasureShortestDistance={handleMeasureShortestDistance}
+            onMeasureDistance={handleMeasureDistance}
           />
         )}
       </div>

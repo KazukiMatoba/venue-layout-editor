@@ -10,7 +10,7 @@ import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
 import MeasurementDialog from './components/MeasurementDialog'
 import { useErrorHandler } from './hooks/useErrorHandler'
-import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, type DistanceType, circumscriptionSizeFull } from './types';
+import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, type DistanceType, circumscriptionSizeFull, type ScaleProps } from './types';
 import './App.css'
 
 function App() {
@@ -34,10 +34,11 @@ function App() {
   // 測定結果ダイアログの状態
   const [measurementDialog, setMeasurementDialog] = useState<{
     isOpen: boolean;
-    distanceType: DistanceType;
     horizontalDistance: number;
     verticalDistance: number;
-    shortestDistance: number;
+    digonalDistance: number;
+    firstTable: TableObject;
+    secondTable: TableObject;
   } | null>(null);
 
   // プロジェクト管理用の状態
@@ -58,7 +59,7 @@ function App() {
     setError(errorMessage)
   }
 
-  const handleCreateTable = (type: 'rectangle' | 'circle' | 'svg' | 'textbox', props: any) => {
+  const handleCreateTable = (type: 'rectangle' | 'circle' | 'svg' | 'textbox' | 'scale', props: any) => {
     if (!svgData) {
       setError('SVG会場図を先に読み込んでください')
       return
@@ -369,7 +370,7 @@ function App() {
     }));
   }
 
-  const handleMeasureDistance = (ids: string[], distanceType: DistanceType) => {
+  const handleMeasureDistance = (ids: string[]) => {
     const selectedTables = tables.filter(table => ids.includes(table.id))
     if (selectedTables.length === 0) return
     if (selectedTables.length > 2) return
@@ -398,14 +399,15 @@ function App() {
     );
 
     // 最短距離
-    const shortestDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(verticalDistance, 2));
+    const digonalDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(verticalDistance, 2));
 
     setMeasurementDialog({
       isOpen: true,
-      distanceType: distanceType,
       horizontalDistance: Math.round(horizontalDistance),
       verticalDistance: Math.round(verticalDistance),
-      shortestDistance: Math.round(shortestDistance)
+      digonalDistance: Math.round(digonalDistance),
+      firstTable: firstTable,
+      secondTable: secondTable
     });
   }
 
@@ -473,6 +475,14 @@ function App() {
     // エラーをクリア
     clearError();
   };
+
+  const handleCreateScale = (firstTableId: string, secondTableId: string) => {
+    const scaleProps: ScaleProps = {
+      firstTableId: firstTableId,
+      secondTableId: secondTableId
+    }
+    handleCreateTable('scale', scaleProps);
+  }
 
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
   const primarySelectedTable = selectedTables.length > 0 ? selectedTables[0] : null
@@ -602,10 +612,12 @@ function App() {
         {measurementDialog && (
           <MeasurementDialog
             isOpen={measurementDialog.isOpen}
-            distanceType={measurementDialog.distanceType}
-            horizontalDistance= {measurementDialog.horizontalDistance}
-            verticalDistance= {measurementDialog.verticalDistance}
-            shortestDistance= {measurementDialog.shortestDistance}
+            horizontalDistance={measurementDialog.horizontalDistance}
+            verticalDistance={measurementDialog.verticalDistance}
+            digonalDistance={measurementDialog.digonalDistance}
+            firstTableId={measurementDialog.firstTable.id}
+            secondTableId={measurementDialog.secondTable.id}
+            onCreateScale={handleCreateScale}
             onClose={() => setMeasurementDialog(null)}
           />
         )}
