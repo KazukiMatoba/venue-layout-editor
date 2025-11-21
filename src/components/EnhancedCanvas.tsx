@@ -32,6 +32,8 @@ interface EnhancedCanvasProps {
   onTextBoxDoubleClick?: (id: string) => void;
   onShapeDoubleClick?: (id: string) => void;
   lastSaveTime?: Date | null;
+  onTableDuplicateCustom?: (id: string) => void;
+  onMultipleTableDuplicateCustom?: (ids: string[]) => void;
 }
 
 
@@ -61,6 +63,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   onTextBoxDoubleClick,
   onShapeDoubleClick,
   lastSaveTime,
+  onTableDuplicateCustom,
+  onMultipleTableDuplicateCustom,
 }) => {
   // 動的なキャンバスサイズ計算
   const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
@@ -445,6 +449,14 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
   const handleMeasureDistance = () => {
     onMeasureDistance?.(selectedTableIds);
   }
+
+  const handleTableDuplicateCustom = (tableId: string) => {
+    onTableDuplicateCustom?.(tableId);
+  };
+
+  const handleMultipleTableDuplicateCustom = () => {
+    onMultipleTableDuplicateCustom?.(selectedTableIds);
+  };
 
   // グリッド線の生成
   const generateGridLines = () => {
@@ -894,6 +906,8 @@ const EnhancedCanvas: React.FC<EnhancedCanvasProps> = ({
             onHorizontallyCentered={handleHorizontallyCentered}
             onAlignRight={handleAlignRight}
             onMeasureDistance={handleMeasureDistance}
+            onDuplicateCustom={() => handleTableDuplicateCustom(contextMenu.tableId)}
+            onDuplicateMultipleCustom={handleMultipleTableDuplicateCustom}
           />
         )}
       </div>

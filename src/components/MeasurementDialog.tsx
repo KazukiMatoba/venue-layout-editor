@@ -1,7 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 
-import { type DistanceType, type TableObject } from '../types';
-
 interface MeasurementDialogProps {
     isOpen: boolean;
     horizontalDistance: number;

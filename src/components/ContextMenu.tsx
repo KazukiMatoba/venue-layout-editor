@@ -18,6 +18,8 @@ interface ContextMenuProps {
   onHorizontallyCentered?: () => void;
   onAlignRight?: () => void;
   onMeasureDistance?: () => void;
+  onDuplicateCustom: () => void;
+  onDuplicateMultipleCustom?: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -38,6 +40,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   onHorizontallyCentered,
   onAlignRight,
   onMeasureDistance,
+  onDuplicateCustom,
+  onDuplicateMultipleCustom,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -73,6 +77,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
     onClose();
   };
 
+  const handleDuplicateCustom = () => {
+    onDuplicateCustom();
+    onClose();
+  };
+
   const handleDeleteMultiple = () => {
     onDeleteMultiple?.();
     onClose();
@@ -80,6 +89,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
   const handleDuplicateMultiple = () => {
     onDuplicateMultiple?.();
+    onClose();
+  };
+
+  const handleDuplicateMultipleCustom = () => {
+    onDuplicateMultipleCustom?.();
     onClose();
   };
 
@@ -342,6 +356,27 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
           
           <div
             className="context-menu-item"
+            onClick={handleDuplicateMultipleCustom}
+            style={{
+              padding: '4px 16px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f0f0f0';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            📋 選択したオブジェクトを複製(詳細) ({selectedTableIds.length}個)
+          </div>
+          
+          <div
+            className="context-menu-item"
             onClick={handleDeleteMultiple}
             style={{
               padding: '4px 16px',
@@ -386,6 +421,27 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
                 }}
               >
                 📋 オブジェクトを複製
+              </div>
+
+              <div
+                className="context-menu-item"
+                onClick={handleDuplicateCustom}
+                style={{
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f0f0f0';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
+              >
+                📋 オブジェクトを複製(詳細)
               </div>
 
               <div

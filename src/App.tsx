@@ -9,6 +9,7 @@ import TextBoxEditor from './components/TextBoxEditor'
 import ShapeEditor from './components/ShapeEditor'
 import ProjectManager from './components/ProjectManager'
 import MeasurementDialog from './components/MeasurementDialog'
+import DuplicateCustomDialog from './components/DuplicateCustomDialog'
 import { useErrorHandler } from './hooks/useErrorHandler'
 import { type SVGData, type TableObject, type Position, type BoundaryArea, type TextBoxProps, type ProjectData, type DistanceType, circumscriptionSizeFull, type ScaleProps } from './types';
 import './App.css'
@@ -39,6 +40,11 @@ function App() {
     digonalDistance: number;
     firstTable: TableObject;
     secondTable: TableObject;
+  } | null>(null);
+
+  // 詳細コピーダイアログの状態
+  const [duplicateCustomDialog, setDuplicateCustomDialog] = useState<{
+    isOpen: boolean;
   } | null>(null);
 
   // プロジェクト管理用の状態
@@ -411,6 +417,18 @@ function App() {
     });
   }
 
+  const handleTableDuplicateCustom = (id: string) => {
+    setDuplicateCustomDialog({
+      isOpen: true,
+    });
+  }
+
+  const handleMultipleTableDuplicateCustom = (ids: string[]) => {
+    setDuplicateCustomDialog({
+      isOpen: true,
+    });
+  }
+
   // テキストボックス編集ハンドラー
   const handleTextBoxDoubleClick = (id: string) => {
     setEditingTextBoxId(id);
@@ -482,6 +500,50 @@ function App() {
       secondTableId: secondTableId
     }
     handleCreateTable('scale', scaleProps);
+  }
+
+  type CopyDirection = 'up' | 'down' | 'left' | 'right';
+  const handleDuplicateWithInterval = (ids: string[], direction: CopyDirection, count: number, interval: number) => {
+    const selectedTables = tables.filter(table => ids.includes(table.id))
+    if (selectedTables.length === 0) return
+
+    // 方向に応じたオフセット計算
+    const getOffset = (direction: CopyDirection, multiplier: number) => {
+      const offset = interval * multiplier;
+      switch (direction) {
+        case 'up':
+          return { x: 0, y: -offset };
+        case 'down':
+          return { x: 0, y: offset };
+        case 'left':
+          return { x: -offset, y: 0 };
+        case 'right':
+          return { x: offset, y: 0 };
+        default:
+          return { x: 0, y: 0 };
+      }
+    };
+
+    // 指定された数だけ複製を作成
+    const allNewTables: TableObject[] = [];
+
+    for (let copyIndex = 1; copyIndex <= count; copyIndex++) {
+      const offset = getOffset(direction, copyIndex);
+
+      const newTablesForThisCopy = selectedTables.map((originalTable, tableIndex) => ({
+        ...originalTable,
+        id: `table_${Date.now()}_${copyIndex}_${tableIndex}_${Math.random().toString(36).substring(2, 9)}`,
+        position: {
+          x: originalTable.position.x + offset.x,
+          y: originalTable.position.y + offset.y
+        }
+      }));
+
+      allNewTables.push(...newTablesForThisCopy);
+    }
+
+    setTables(prev => [...prev, ...allNewTables])
+    setSelectedTableIds(allNewTables.map(table => table.id))
   }
 
   const selectedTables = tables.filter(table => selectedTableIds.includes(table.id))
@@ -576,6 +638,8 @@ function App() {
                 onTextBoxDoubleClick={handleTextBoxDoubleClick}
                 onShapeDoubleClick={handleShapeDoubleClick}
                 lastSaveTime={lastSaveTime}
+                onTableDuplicateCustom={handleTableDuplicateCustom}
+                onMultipleTableDuplicateCustom={handleMultipleTableDuplicateCustom}
               />
             ) : (
               <div className="canvas-empty">
@@ -619,6 +683,16 @@ function App() {
             secondTableId={measurementDialog.secondTable.id}
             onCreateScale={handleCreateScale}
             onClose={() => setMeasurementDialog(null)}
+          />
+        )}
+
+        {/* 詳細コピーダイアログ */}
+        {duplicateCustomDialog && (
+          <DuplicateCustomDialog
+            isOpen={duplicateCustomDialog.isOpen}
+            ids={selectedTableIds}
+            onClose={() => setDuplicateCustomDialog(null)}
+            onDuplicate={handleDuplicateWithInterval}
           />
         )}
       </div>
