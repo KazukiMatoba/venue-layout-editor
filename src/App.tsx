@@ -507,40 +507,80 @@ function App() {
     const selectedTables = tables.filter(table => ids.includes(table.id))
     if (selectedTables.length === 0) return
 
-    // 方向に応じたオフセット計算
-    const getOffset = (direction: CopyDirection, multiplier: number) => {
-      const offset = interval * multiplier;
-      switch (direction) {
-        case 'up':
-          return { x: 0, y: -offset };
-        case 'down':
-          return { x: 0, y: offset };
-        case 'left':
-          return { x: -offset, y: 0 };
-        case 'right':
-          return { x: offset, y: 0 };
-        default:
-          return { x: 0, y: 0 };
-      }
-    };
+  // 方向に応じた基準座標とオフセット計算
+  const getOffsetFromBoundary = (direction: CopyDirection, multiplier: number) => {
+    const offset = interval * multiplier;
+    
+    switch (direction) {
+      case 'up':
+        // 図形の上端から上方向にオフセット
+        return (originalTable: TableObject) => {
+          const tableCircumscription = circumscriptionSizeFull(originalTable);
+          const tableHeight = tableCircumscription.height;
+          return {
+            x: 0,
+            y: -(offset + (tableHeight * multiplier))
+          };
+        };
+        
+      case 'down':
+        // 図形の下端から下方向にオフセット
+        return (originalTable: TableObject) => {
+          const tableCircumscription = circumscriptionSizeFull(originalTable);
+          const tableHeight = tableCircumscription.height;
+          return {
+            x: 0,
+            y: offset + (tableHeight * multiplier)
+          };
+        };
+        
+      case 'left':
+        // 図形の左端から左方向にオフセット
+        return (originalTable: TableObject) => {
+          const tableCircumscription = circumscriptionSizeFull(originalTable);
+          const tableWidth = tableCircumscription.width;
+          return {
+            x: -(offset + (tableWidth * multiplier)),
+            y: 0
+          };
+        };
+        
+      case 'right':
+        // 図形の右端から右方向にオフセット
+        return (originalTable: TableObject) => {
+          const tableCircumscription = circumscriptionSizeFull(originalTable);
+          const tableWidth = tableCircumscription.width;
+          return {
+            x: offset + (tableWidth * multiplier),
+            y: 0
+          };
+        };
+        
+      default:
+        return () => ({ x: 0, y: 0 });
+    }
+  };
 
-    // 指定された数だけ複製を作成
-    const allNewTables: TableObject[] = [];
-
-    for (let copyIndex = 1; copyIndex <= count; copyIndex++) {
-      const offset = getOffset(direction, copyIndex);
-
-      const newTablesForThisCopy = selectedTables.map((originalTable, tableIndex) => ({
+  // 複製作成処理
+  const allNewTables: TableObject[] = [];
+  
+  for (let copyIndex = 1; copyIndex <= count; copyIndex++) {
+    const offsetCalculator = getOffsetFromBoundary(direction, copyIndex);
+    
+    const newTablesForThisCopy = selectedTables.map((originalTable, tableIndex) => {
+      const offset = offsetCalculator(originalTable);
+      return {
         ...originalTable,
         id: `table_${Date.now()}_${copyIndex}_${tableIndex}_${Math.random().toString(36).substring(2, 9)}`,
         position: {
           x: originalTable.position.x + offset.x,
           y: originalTable.position.y + offset.y
         }
-      }));
-
-      allNewTables.push(...newTablesForThisCopy);
-    }
+      };
+    });
+    
+    allNewTables.push(...newTablesForThisCopy);
+  }
 
     setTables(prev => [...prev, ...allNewTables])
     setSelectedTableIds(allNewTables.map(table => table.id))
